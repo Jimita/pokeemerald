@@ -146,6 +146,18 @@ LittlerootTown_BrendansHouse_1F_EventScript_MeetRival2:: @ 81F78D6
 	goto LittlerootTown_BrendansHouse_1F_EventScript_MeetRival
 	end
 
+LittlerootTown_BrendansHouse_1F_EventScript_MeetRival3::
+	lockall
+	setvar VAR_0x8008, 3
+	goto LittlerootTown_BrendansHouse_1F_EventScript_MeetRival
+	end
+
+LittlerootTown_BrendansHouse_1F_EventScript_MeetRival4::
+	lockall
+	setvar VAR_0x8008, 4
+	goto LittlerootTown_BrendansHouse_1F_EventScript_MeetRival
+	end
+
 LittlerootTown_BrendansHouse_1F_EventScript_MeetRival:: @ 81F78E2
 	playse SE_EXIT
 	delay 10
@@ -165,6 +177,10 @@ LittlerootTown_BrendansHouse_1F_EventScript_MeetRival:: @ 81F78E2
 	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer1
 	compare VAR_0x8008, 2
 	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer2
+	compare VAR_0x8008, 3
+	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer3
+	compare VAR_0x8008, 4
+	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer4
 	msgbox RivalsHouse_1F_Text_BrendanWhoAreYou, MSGBOX_DEFAULT
 	closemessage
 	compare VAR_0x8008, 0
@@ -173,6 +189,10 @@ LittlerootTown_BrendansHouse_1F_EventScript_MeetRival:: @ 81F78E2
 	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs1
 	compare VAR_0x8008, 2
 	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs2
+	compare VAR_0x8008, 3
+	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs3
+	compare VAR_0x8008, 4
+	call_if_eq LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs4
 	playse SE_EXIT
 	removeobject LOCALID_RIVAL
 	setflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_BRENDAN
@@ -206,6 +226,16 @@ LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer2:: @ 81F79A2
 	waitmovement 0
 	return
 
+LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer3:: @ 81F79A2
+	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer3
+	waitmovement 0
+	return
+
+LittlerootTown_BrendansHouse_1F_EventScript_BrendanApproachPlayer4:: @ 81F79A2
+	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer4
+	waitmovement 0
+	return
+
 LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer0: @ 81F79AD
 	walk_in_place_fastest_left
 	walk_left
@@ -232,6 +262,24 @@ LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer2: @ 81F79B9
 	walk_up
 	step_end
 
+LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer3: @ 81F79B9
+	walk_in_place_fastest_left
+	walk_left
+	walk_in_place_fastest_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+LittlerootTown_BrendansHouse_1F_Movement_BrendanApproachPlayer4: @ 81F79B9
+	walk_in_place_fastest_right
+	walk_right
+	walk_in_place_fastest_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
 LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs0:: @ 81F79C1
 	applymovement OBJ_EVENT_ID_PLAYER, LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit0
 	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs0
@@ -247,6 +295,18 @@ LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs1:: @ 81F79D3
 LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs2:: @ 81F79E5
 	applymovement OBJ_EVENT_ID_PLAYER, LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit2
 	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs2
+	waitmovement 0
+	return
+
+LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs3:: @ 81F79E5
+	applymovement OBJ_EVENT_ID_PLAYER, LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit3
+	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs3
+	waitmovement 0
+	return
+
+LittlerootTown_BrendansHouse_1F_EventScript_BrendanGoUpstairs4:: @ 81F79E5
+	applymovement OBJ_EVENT_ID_PLAYER, LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit4
+	applymovement LOCALID_RIVAL, LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs4
 	waitmovement 0
 	return
 
@@ -269,6 +329,22 @@ LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit2: @ 81F7A02
 	delay_16
 	delay_8
 	walk_in_place_fastest_left
+	step_end
+
+LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit3: @ 81F7A02
+	delay_8
+	delay_16
+	walk_in_place_fastest_right
+	delay_8
+	walk_in_place_fastest_up
+	step_end
+
+LittlerootTown_BrendansHouse_1F_Movement_PlayerWatchBrendanExit4: @ 81F7A02
+	delay_8
+	delay_16
+	walk_in_place_fastest_left
+	delay_8
+	walk_in_place_fastest_up
 	step_end
 
 LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs0: @ 81F7A06
@@ -295,6 +371,24 @@ LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs2: @ 81F7A16
 	walk_in_place_fastest_left
 	walk_left
 	walk_in_place_fastest_up
+	walk_up
+	walk_up
+	step_end
+
+LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs3: @ 81F7A16
+	walk_in_place_fastest_right
+	walk_right
+	walk_in_place_fastest_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+LittlerootTown_BrendansHouse_1F_Movement_BrendanGoUpstairs4: @ 81F7A16
+	walk_in_place_fastest_left
+	walk_left
+	walk_in_place_fastest_up
+	walk_up
 	walk_up
 	walk_up
 	step_end

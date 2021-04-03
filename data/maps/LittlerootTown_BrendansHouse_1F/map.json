@@ -165,6 +165,24 @@
       "var": "VAR_LITTLEROOT_RIVAL_STATE",
       "var_value": "2",
       "script": "LittlerootTown_BrendansHouse_1F_EventScript_MeetRival2"
+    },
+    {
+      "type": "trigger",
+      "x": 7,
+      "y": 4,
+      "elevation": 0,
+      "var": "VAR_LITTLEROOT_RIVAL_STATE",
+      "var_value": "2",
+      "script": "LittlerootTown_BrendansHouse_1F_EventScript_MeetRival3"
+    },
+    {
+      "type": "trigger",
+      "x": 9,
+      "y": 4,
+      "elevation": 0,
+      "var": "VAR_LITTLEROOT_RIVAL_STATE",
+      "var_value": "2",
+      "script": "LittlerootTown_BrendansHouse_1F_EventScript_MeetRival4"
     }
   ],
   "bg_events": []

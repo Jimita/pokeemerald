@@ -165,6 +165,24 @@
       "var": "VAR_LITTLEROOT_RIVAL_STATE",
       "var_value": "2",
       "script": "LittlerootTown_MaysHouse_1F_EventScript_MeetRival2"
+    },
+    {
+      "type": "trigger",
+      "x": 1,
+      "y": 4,
+      "elevation": 0,
+      "var": "VAR_LITTLEROOT_RIVAL_STATE",
+      "var_value": "2",
+      "script": "LittlerootTown_MaysHouse_1F_EventScript_MeetRival3"
+    },
+    {
+      "type": "trigger",
+      "x": 3,
+      "y": 4,
+      "elevation": 0,
+      "var": "VAR_LITTLEROOT_RIVAL_STATE",
+      "var_value": "2",
+      "script": "LittlerootTown_MaysHouse_1F_EventScript_MeetRival4"
     }
   ],
   "bg_events": []
