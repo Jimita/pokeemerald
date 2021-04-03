@@ -92,6 +92,7 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
     u8 tileTransitionState = gPlayerAvatar.tileTransitionState;
     u8 runningState = gPlayerAvatar.runningState;
     bool8 forcedMove = MetatileBehavior_IsForcedMovementTile(GetPlayerCurMetatileBehavior(runningState));
+    u16 heldMoveKeys = (heldKeys & (DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT));
 
     if ((tileTransitionState == T_TILE_CENTER && forcedMove == FALSE) || tileTransitionState == T_NOT_MOVING)
     {
@@ -107,7 +108,7 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
                 input->pressedBButton = TRUE;
         }
 
-        if (heldKeys & (DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT))
+        if (heldMoveKeys)
         {
             input->heldDirection = TRUE;
             input->heldDirection2 = TRUE;
@@ -122,7 +123,15 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
             input->checkStandardWildEncounter = TRUE;
     }
 
-    if (heldKeys & DPAD_UP)
+    if (heldMoveKeys == (DPAD_UP | DPAD_LEFT))
+        input->dpadDirection = DIR_NORTHWEST;
+    else if (heldMoveKeys == (DPAD_UP | DPAD_RIGHT))
+        input->dpadDirection = DIR_NORTHEAST;
+    else if (heldMoveKeys == (DPAD_DOWN | DPAD_LEFT))
+        input->dpadDirection = DIR_SOUTHWEST;
+    else if (heldMoveKeys == (DPAD_DOWN | DPAD_RIGHT))
+        input->dpadDirection = DIR_SOUTHEAST;
+    else if (heldKeys & DPAD_UP)
         input->dpadDirection = DIR_NORTH;
     else if (heldKeys & DPAD_DOWN)
         input->dpadDirection = DIR_SOUTH;

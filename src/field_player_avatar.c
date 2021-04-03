@@ -187,7 +187,7 @@ static bool8 (*const sForcedMovementFuncs[])(void) =
     ForcedMovement_MuddySlope,
 };
 
-static void (*const gUnknown_08497490[])(u8, u16) =
+static void (*const gNotOnBikeFuncs[])(u8, u16) =
 {
     PlayerNotOnBikeNotMoving,
     PlayerNotOnBikeTurningInPlace,
@@ -229,6 +229,10 @@ static bool8 (*const sArrowWarpMetatileBehaviorChecks[])(u8) =
     MetatileBehavior_IsNorthArrowWarp,
     MetatileBehavior_IsWestArrowWarp,
     MetatileBehavior_IsEastArrowWarp,
+    MetatileBehavior_IsSouthwestArrowWarp,
+    MetatileBehavior_IsSoutheastArrowWarp,
+    MetatileBehavior_IsNorthwestArrowWarp,
+    MetatileBehavior_IsNortheastArrowWarp,
 };
 
 static const u8 sRivalAvatarGfxIds[][2] =
@@ -285,6 +289,10 @@ static bool8 (*const sArrowWarpMetatileBehaviorChecks2[])(u8) =  //Duplicate of 
     MetatileBehavior_IsNorthArrowWarp,
     MetatileBehavior_IsWestArrowWarp,
     MetatileBehavior_IsEastArrowWarp,
+    MetatileBehavior_IsSouthwestArrowWarp,
+    MetatileBehavior_IsSoutheastArrowWarp,
+    MetatileBehavior_IsNorthwestArrowWarp,
+    MetatileBehavior_IsNortheastArrowWarp,
 };
 
 static bool8 (*const sPushBoulderFuncs[])(struct Task *, struct ObjectEvent *, struct ObjectEvent *) =
@@ -572,7 +580,7 @@ static bool8 ForcedMovement_MuddySlope(void)
 
 static void MovePlayerNotOnBike(u8 direction, u16 heldKeys)
 {
-    gUnknown_08497490[CheckMovementInputNotOnBike(direction)](direction, heldKeys);
+    gNotOnBikeFuncs[CheckMovementInputNotOnBike(direction)](direction, heldKeys);
 }
 
 static u8 CheckMovementInputNotOnBike(u8 direction)
