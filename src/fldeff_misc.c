@@ -551,10 +551,10 @@ bool8 SetUpFieldMove_SecretPower(void)
 
     CheckPlayerHasSecretBase();
 
-    if (gSpecialVar_Result == 1 || GetPlayerFacingDirection() != DIR_NORTH)
+    if (gSpecialVar_Result == 1 || GetPlayerFacingDirectionNonDiagonal() != DIR_NORTH)
         return FALSE;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&gPlayerFacingPosition.x, &gPlayerFacingPosition.y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&gPlayerFacingPosition.x, &gPlayerFacingPosition.y);
     mb = MapGridGetMetatileBehaviorAt(gPlayerFacingPosition.x, gPlayerFacingPosition.y);
 
     if (MetatileBehavior_IsSecretBaseCave(mb) == TRUE)
@@ -791,7 +791,7 @@ bool8 FldEff_SecretBasePCTurnOn(void)
     s16 x, y;
     u8 taskId;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     taskId = CreateTask(Task_SecretBasePCTurnOn, 0);
     gTasks[taskId].tX = x;
@@ -837,7 +837,7 @@ void DoSecretBasePCTurnOffEffect(void)
 {
     s16 x, y;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     PlaySE(SE_PC_OFF);
 
     if (!VarGet(VAR_CURRENT_SECRET_BASE))
@@ -936,7 +936,7 @@ static void Task_ShatterSecretBaseBreakableDoor(u8 taskId)
 
 void ShatterSecretBaseBreakableDoor(s16 x, s16 y)
 {
-    u8 dir = GetPlayerFacingDirection();
+    u8 dir = GetPlayerFacingDirectionNonDiagonal();
 
     if (dir == DIR_SOUTH)
     {
@@ -1036,12 +1036,12 @@ bool8 FldEff_SandPillar(void)
     s16 x, y;
 
     ScriptContext2_Enable();
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     gFieldEffectArguments[5] = x;
     gFieldEffectArguments[6] = y;
 
-    switch (GetPlayerFacingDirection())
+    switch (GetPlayerFacingDirectionNonDiagonal())
     {
     case DIR_SOUTH:
         CreateSprite(&sSpriteTemplate_SandPillar,

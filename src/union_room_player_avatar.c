@@ -575,7 +575,7 @@ bool32 TryInteractWithUnionRoomMember(struct UnkStruct_Main0 *main0, s16 *direct
     {
         return FALSE;
     }
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     for (i = 0, r4 = main0->arr; i < MAX_UNION_ROOM_PLAYERS; i++)
     {
         for (direction = DIR_NONE; direction <= DIR_EAST; direction++)

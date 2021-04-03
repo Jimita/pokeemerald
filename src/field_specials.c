@@ -539,7 +539,7 @@ void SpawnLinkPartnerObjectEvent(void)
     u8 i;
 
     myLinkPlayerNumber = GetMultiplayerId();
-    playerFacingDirection = GetPlayerFacingDirection();
+    playerFacingDirection = GetPlayerFacingDirectionNonDiagonal();
     switch (playerFacingDirection)
     {
         case DIR_WEST:
@@ -1056,7 +1056,7 @@ static void PCTurnOnEffect_0(struct Task *task)
     if (task->data[3] == 6)
     {
         task->data[3] = 0;
-        playerDirection = GetPlayerFacingDirection();
+        playerDirection = GetPlayerFacingDirectionNonDiagonal();
         switch (playerDirection)
         {
             case DIR_NORTH:
@@ -1129,7 +1129,7 @@ static void PCTurnOffEffect(void)
     s8 dx = 0;
     s8 dy = 0;
     u16 tileId = 0;
-    u8 playerDirection = GetPlayerFacingDirection();
+    u8 playerDirection = GetPlayerFacingDirectionNonDiagonal();
     switch (playerDirection)
     {
         case DIR_NORTH:

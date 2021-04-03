@@ -120,6 +120,7 @@ void InitObjectEventPalettes(u8 palSlot);
 void UpdateObjectEventCurrentMovement(struct ObjectEvent *, struct Sprite *, bool8(struct ObjectEvent *, struct Sprite *));
 u8 ObjectEventFaceOppositeDirection(struct ObjectEvent *, u8);
 u8 GetOppositeDirection(u8);
+u8 GetNonDiagonalDirection(u8 direction);
 u8 GetWalkInPlaceFastestMovementAction(u32);
 u8 GetWalkInPlaceFastMovementAction(u32);
 u8 GetWalkInPlaceNormalMovementAction(u32);

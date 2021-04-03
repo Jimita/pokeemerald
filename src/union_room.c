@@ -3982,7 +3982,7 @@ static void PrintGroupMemberCandidateOnWindowWithColor(u8 windowId, u8 x, u8 y, 
 static bool32 IsPlayerFacingTradingBoard(void)
 {
     s16 x, y;
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     if (x != 2 + 7)
         return FALSE;

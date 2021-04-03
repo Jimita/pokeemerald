@@ -1129,6 +1129,13 @@ void GetXYCoordsOneStepInFrontOfPlayer(s16 *x, s16 *y)
     MoveCoords(GetPlayerFacingDirection(), x, y);
 }
 
+void GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(s16 *x, s16 *y)
+{
+    *x = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
+    *y = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
+    MoveCoords(GetPlayerFacingDirectionNonDiagonal(), x, y);
+}
+
 void PlayerGetDestCoords(s16 *x, s16 *y)
 {
     *x = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
@@ -1173,6 +1180,11 @@ u8 player_get_pos_including_state_based_drift(s16 *x, s16 *y)
 u8 GetPlayerFacingDirection(void)
 {
     return gObjectEvents[gPlayerAvatar.objectEventId].facingDirection;
+}
+
+u8 GetPlayerFacingDirectionNonDiagonal(void)
+{
+    return GetNonDiagonalDirection(gObjectEvents[gPlayerAvatar.objectEventId].movementDirection);
 }
 
 u8 GetPlayerMovementDirection(void)
@@ -1441,7 +1453,7 @@ static void HideShowWarpArrow(struct ObjectEvent *objectEvent)
 
     for (x = 0, direction = DIR_SOUTH; x < 4; x++, direction++)
     {
-        if (sArrowWarpMetatileBehaviorChecks2[x](metatileBehavior) && direction == objectEvent->movementDirection)
+        if (sArrowWarpMetatileBehaviorChecks2[x](metatileBehavior) && direction == GetNonDiagonalDirection(objectEvent->movementDirection))
         {
             // Show warp arrow if applicable
             x = objectEvent->currentCoords.x;
@@ -2048,7 +2060,7 @@ static void AlignFishingAnimationFrames(void)
     if (animType == 1 || animType == 2 || animType == 3)
     {
         playerSprite->pos2.x = 8;
-        if (GetPlayerFacingDirection() == 3)
+        if (GetPlayerFacingDirectionNonDiagonal() == 3)
             playerSprite->pos2.x = -8;
     }
     if (animType == 5)

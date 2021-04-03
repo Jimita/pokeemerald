@@ -213,7 +213,7 @@ LavaridgeTown_Movement_RivalExitHerbShop: @ 81EA6F8
 	step_end
 
 LavaridgeTown_EventScript_HotSpringsTrigger:: @ 81EA6FA
-	specialvar VAR_RESULT, GetPlayerFacingDirection
+	specialvar VAR_RESULT, GetPlayerFacingDirectionNonDiagonal
 	compare VAR_RESULT, DIR_SOUTH
 	goto_if_eq LavaridgeTown_EventScript_EnteredHotSprings
 	end

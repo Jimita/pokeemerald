@@ -5224,6 +5224,22 @@ u8 GetOppositeDirection(u8 direction)
     return directions[direction - 1];
 }
 
+u8 GetNonDiagonalDirection(u8 direction)
+{
+    switch (direction)
+    {
+        case DIR_SOUTHWEST:
+        case DIR_SOUTHEAST:
+            return DIR_SOUTH;
+            break;
+        case DIR_NORTHWEST:
+        case DIR_NORTHEAST:
+            return DIR_NORTH;
+            break;
+    }
+    return direction;
+}
+
 static u32 zffu_offset_calc(u8 a0, u8 a1)
 {
     return gUnknown_0850DC2F[a0 - 1][a1 - 1];

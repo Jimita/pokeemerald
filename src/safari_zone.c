@@ -133,7 +133,7 @@ void GetPokeblockFeederInFront(void)
     s16 x, y;
     u16 i;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     for (i = 0; i < NUM_POKEBLOCK_FEEDERS; i++)
     {
@@ -213,7 +213,7 @@ void SafariZoneActivatePokeblockFeeder(u8 pkblId)
          && sPokeblockFeeders[i].y == 0)
         {
             // Initialize Pokeblock feeder
-            GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+            GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
             sPokeblockFeeders[i].mapNum = gSaveBlock1Ptr->location.mapNum;
             sPokeblockFeeders[i].pokeblock = gSaveBlock1Ptr->pokeblocks[pkblId];
             sPokeblockFeeders[i].stepCounter = 100;

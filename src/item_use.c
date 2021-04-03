@@ -231,7 +231,7 @@ static bool32 CanFish(void)
     s16 x, y;
     u16 tileBehavior;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     tileBehavior = MapGridGetMetatileBehaviorAt(x, y);
 
     if (MetatileBehavior_IsWaterfall(tileBehavior))
@@ -723,7 +723,7 @@ static bool8 TryToWaterSudowoodo(void)
     u16 x, y;
     u8 z;
     u8 objId;
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     z = PlayerGetZCoord();
     objId = GetObjectEventIdByXYZ(x, y, z);
     if (objId == OBJECT_EVENTS_COUNT || gObjectEvents[objId].graphicsId != OBJ_EVENT_GFX_SUDOWOODO)

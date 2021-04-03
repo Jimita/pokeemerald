@@ -43,6 +43,7 @@ u8 gSelectedObjectEvent;
 
 static void GetPlayerPosition(struct MapPosition *);
 static void GetInFrontOfPlayerPosition(struct MapPosition *);
+static void GetInFrontOfPlayerPositionNonDiagonal(struct MapPosition *);
 static u16 GetPlayerCurMetatileBehavior(int);
 static bool8 TryStartInteractionScript(struct MapPosition*, u16, u8);
 static const u8 *GetInteractionScript(struct MapPosition*, u8, u8);
@@ -144,13 +145,15 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
 int ProcessPlayerFieldInput(struct FieldInput *input)
 {
     struct MapPosition position;
-    u8 playerDirection;
+    u8 playerDirection, nonDiagonalPlayerDirection;
     u16 metatileBehavior;
 
     gSpecialVar_LastTalked = 0;
     gSelectedObjectEvent = 0;
 
     playerDirection = GetPlayerFacingDirection();
+    nonDiagonalPlayerDirection = GetNonDiagonalDirection(playerDirection);
+
     GetPlayerPosition(&position);
     metatileBehavior = MapGridGetMetatileBehaviorAt(position.x, position.y);
 
@@ -166,25 +169,25 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
     {
         IncrementGameStat(GAME_STAT_STEPS);
         IncrementBirthIslandRockStepCount();
-        if (TryStartStepBasedScript(&position, metatileBehavior, playerDirection) == TRUE)
+        if (TryStartStepBasedScript(&position, metatileBehavior, playerDirection) == TRUE) // playerDirection is unused in that function
             return TRUE;
     }
     if (input->checkStandardWildEncounter && CheckStandardWildEncounter(metatileBehavior) == TRUE)
         return TRUE;
     if (input->heldDirection && input->dpadDirection == playerDirection)
     {
-        if (TryArrowWarp(&position, metatileBehavior, playerDirection) == TRUE)
+        if (TryArrowWarp(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
             return TRUE;
     }
 
-    GetInFrontOfPlayerPosition(&position);
+    GetInFrontOfPlayerPositionNonDiagonal(&position);
     metatileBehavior = MapGridGetMetatileBehaviorAt(position.x, position.y);
-    if (input->pressedAButton && TryStartInteractionScript(&position, metatileBehavior, playerDirection) == TRUE)
+    if (input->pressedAButton && TryStartInteractionScript(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
         return TRUE;
 
     if (input->heldDirection2 && input->dpadDirection == playerDirection)
     {
-        if (TryDoorWarp(&position, metatileBehavior, playerDirection) == TRUE)
+        if (TryDoorWarp(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
             return TRUE;
     }
     if (input->pressedAButton && TrySetupDiveDownScript() == TRUE)
@@ -212,6 +215,18 @@ static void GetInFrontOfPlayerPosition(struct MapPosition *position)
     s16 x, y;
 
     GetXYCoordsOneStepInFrontOfPlayer(&position->x, &position->y);
+    PlayerGetDestCoords(&x, &y);
+    if (MapGridGetZCoordAt(x, y) != 0)
+        position->height = PlayerGetZCoord();
+    else
+        position->height = 0;
+}
+
+static void GetInFrontOfPlayerPositionNonDiagonal(struct MapPosition *position)
+{
+    s16 x, y;
+
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&position->x, &position->y);
     PlayerGetDestCoords(&x, &y);
     if (MapGridGetZCoordAt(x, y) != 0)
         position->height = PlayerGetZCoord();
@@ -788,6 +803,14 @@ static bool8 IsArrowWarpMetatileBehavior(u16 metatileBehavior, u8 direction)
         return MetatileBehavior_IsWestArrowWarp(metatileBehavior);
     case DIR_EAST:
         return MetatileBehavior_IsEastArrowWarp(metatileBehavior);
+    case DIR_NORTHWEST:
+        return MetatileBehavior_IsNorthwestArrowWarp(metatileBehavior);
+    case DIR_NORTHEAST:
+        return MetatileBehavior_IsNortheastArrowWarp(metatileBehavior);
+    case DIR_SOUTHWEST:
+        return MetatileBehavior_IsSouthwestArrowWarp(metatileBehavior);
+    case DIR_SOUTHEAST:
+        return MetatileBehavior_IsSoutheastArrowWarp(metatileBehavior);
     }
     return FALSE;
 }
@@ -1000,7 +1023,7 @@ const u8 *GetObjectEventScriptPointerPlayerFacing(void)
     struct MapPosition position;
 
     direction = GetPlayerMovementDirection();
-    GetInFrontOfPlayerPosition(&position);
+    GetInFrontOfPlayerPositionNonDiagonal(&position);
     return GetInteractedObjectEventScript(&position, MapGridGetMetatileBehaviorAt(position.x, position.y), direction);
 }
 
