@@ -595,7 +595,7 @@ static void LoadSavedMapView(void)
     }
 }
 
-void SetTilesFromTransitionView(u8 direction, u8 xoffset, u8 yoffset)
+void SetTilesFromTransitionView(u8 direction, s8 xoffset, s8 yoffset)
 {
     int width = gBackupMapLayout.width;
     int height = gBackupMapLayout.height;
