@@ -595,10 +595,12 @@ static void LoadSavedMapView(void)
     }
 }
 
-void sub_80885C4(u8 a1)
+void DrawCameraTransitionView(u8 direction, u8 xoffs, u8 yoffs)
 {
-    int width;
-    u16 *mapView;
+    int width = gBackupMapLayout.width;
+    int height = gBackupMapLayout.height;
+    u16 *mapView = gSaveBlock1Ptr->mapView;
+
     int x0, y0;
     int x2, y2;
     u16 *src, *dest;
@@ -606,33 +608,45 @@ void sub_80885C4(u8 a1)
     int r9, r8;
     int x, y;
     int i, j;
-    mapView = gSaveBlock1Ptr->mapView;
-    width = gBackupMapLayout.width;
+
     r9 = 0;
     r8 = 0;
     x0 = gSaveBlock1Ptr->pos.x;
     y0 = gSaveBlock1Ptr->pos.y;
     x2 = 15;
     y2 = 14;
-    switch (a1)
+
+    switch (direction)
     {
     case CONNECTION_NORTH:
+        x0 -= xoffs;
         y0 += 1;
         y2 = 13;
         break;
     case CONNECTION_SOUTH:
+        x0 -= xoffs;
         r8 = 1;
         y2 = 13;
         break;
     case CONNECTION_WEST:
+        y0 -= yoffs;
         x0 += 1;
         x2 = 14;
         break;
     case CONNECTION_EAST:
+        y0 -= yoffs;
         r9 = 1;
         x2 = 14;
         break;
     }
+    if (x0 < 0)
+        x0 = 0;
+    else if (x0 >= width)
+        x0 = width - 1;
+    if (y0 < 0)
+        y0 = 0;
+    else if (y0 >= height)
+        y0 = height - 1;
     for (y = 0; y < y2; y++)
     {
         i = 0;
@@ -738,7 +752,7 @@ int CanCameraMoveInDirection(int direction)
     return 1;
 }
 
-void sub_80887F8(struct MapConnection *connection, int direction, int x, int y)
+void GetCameraTransitionOffset(struct MapConnection *connection, int direction, int x, int y)
 {
     struct MapHeader const *mapHeader;
     mapHeader = GetMapHeaderFromConnection(connection);
@@ -782,14 +796,14 @@ bool8 CameraMove(int x, int y)
         old_x = gSaveBlock1Ptr->pos.x;
         old_y = gSaveBlock1Ptr->pos.y;
         connection = sub_8088950(direction, gSaveBlock1Ptr->pos.x, gSaveBlock1Ptr->pos.y);
-        sub_80887F8(connection, direction, x, y);
+        GetCameraTransitionOffset(connection, direction, x, y);
         LoadMapFromCameraTransition(connection->mapGroup, connection->mapNum);
         gCamera.active = TRUE;
         gCamera.x = old_x - gSaveBlock1Ptr->pos.x;
         gCamera.y = old_y - gSaveBlock1Ptr->pos.y;
         gSaveBlock1Ptr->pos.x += x;
         gSaveBlock1Ptr->pos.y += y;
-        sub_80885C4(direction);
+        DrawCameraTransitionView(direction, x, y);
     }
     return gCamera.active;
 }
