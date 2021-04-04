@@ -595,7 +595,7 @@ static void LoadSavedMapView(void)
     }
 }
 
-void SetTilesFromTransitionView(u8 direction, u8 xoffs, u8 yoffs)
+void SetTilesFromTransitionView(u8 direction, u8 xoffset, u8 yoffset)
 {
     int width = gBackupMapLayout.width;
     int height = gBackupMapLayout.height;
@@ -619,34 +619,30 @@ void SetTilesFromTransitionView(u8 direction, u8 xoffs, u8 yoffs)
     switch (direction)
     {
     case CONNECTION_NORTH:
-        x0 -= xoffs;
+        x0 -= xoffset;
         y0 += 1;
         y2 = 13;
         break;
     case CONNECTION_SOUTH:
-        x0 -= xoffs;
+        x0 -= xoffset;
         r8 = 1;
         y2 = 13;
         break;
     case CONNECTION_WEST:
-        y0 -= yoffs;
+        y0 -= yoffset;
         x0 += 1;
         x2 = 14;
         break;
     case CONNECTION_EAST:
-        y0 -= yoffs;
+        y0 -= yoffset;
         r9 = 1;
         x2 = 14;
         break;
     }
     if (x0 < 0)
         x0 = 0;
-    else if (x0 >= width)
-        x0 = width - 1;
     if (y0 < 0)
         y0 = 0;
-    else if (y0 >= height)
-        y0 = height - 1;
     for (y = 0; y < y2; y++)
     {
         i = 0;
