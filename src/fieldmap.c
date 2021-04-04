@@ -595,7 +595,7 @@ static void LoadSavedMapView(void)
     }
 }
 
-void DrawCameraTransitionView(u8 direction, u8 xoffs, u8 yoffs)
+void SetTilesFromTransitionView(u8 direction, u8 xoffs, u8 yoffs)
 {
     int width = gBackupMapLayout.width;
     int height = gBackupMapLayout.height;
@@ -803,7 +803,7 @@ bool8 CameraMove(int x, int y)
         gCamera.y = old_y - gSaveBlock1Ptr->pos.y;
         gSaveBlock1Ptr->pos.x += x;
         gSaveBlock1Ptr->pos.y += y;
-        DrawCameraTransitionView(direction, x, y);
+        SetTilesFromTransitionView(direction, x, y);
     }
     return gCamera.active;
 }
