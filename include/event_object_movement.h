@@ -118,6 +118,7 @@ void MoveObjectEventToMapCoords(struct ObjectEvent *, s16, s16);
 void TryOverrideObjectEventTemplateCoords(u8, u8, u8);
 void InitObjectEventPalettes(u8 palSlot);
 void UpdateObjectEventCurrentMovement(struct ObjectEvent *, struct Sprite *, bool8(struct ObjectEvent *, struct Sprite *));
+bool8 IsDirectionDiagonal(u8 direction);
 u8 ObjectEventFaceOppositeDirection(struct ObjectEvent *, u8);
 u8 GetOppositeDirection(u8);
 u8 GetNonDiagonalDirection(u8 direction);

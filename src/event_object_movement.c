@@ -5240,6 +5240,11 @@ u8 GetNonDiagonalDirection(u8 direction)
     return direction;
 }
 
+bool8 IsDirectionDiagonal(u8 direction)
+{
+    return (direction == DIR_SOUTHWEST || direction == DIR_SOUTHEAST || direction == DIR_NORTHWEST || direction == DIR_NORTHEAST);
+}
+
 static u32 zffu_offset_calc(u8 a0, u8 a1)
 {
     return gUnknown_0850DC2F[a0 - 1][a1 - 1];

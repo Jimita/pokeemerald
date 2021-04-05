@@ -687,6 +687,13 @@ u8 CheckForObjectEventCollision(struct ObjectEvent *objectEvent, s16 x, s16 y, u
 
     if (ShouldJumpLedge(x, y, direction))
     {
+        if (IsDirectionDiagonal(direction))
+        {
+            MoveCoords(direction, &x, &y);
+            collision = GetCollisionAtCoords(objectEvent, x, y, direction);
+            if (collision == COLLISION_IMPASSABLE)
+                return collision;
+        }
         IncrementGameStat(GAME_STAT_JUMPED_DOWN_LEDGES);
         return COLLISION_LEDGE_JUMP;
     }
