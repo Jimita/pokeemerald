@@ -36,13 +36,13 @@ static void DrawMetatile(s32, const u16 *, u16);
 static void CameraPanningCB_PanAhead(void);
 static void OffsetCameraPosition(int x, int y);
 
-static struct Coords16 sCameraPosition;
 static struct FieldCameraOffset sFieldCameraOffset;
 static s16 sHorizontalCameraPan;
 static s16 sVerticalCameraPan;
 static bool8 sBikeCameraPanFlag;
 static void (*sFieldCameraPanningCallback)(void);
 
+struct Coords16 gCameraPosition;
 struct CameraObject gFieldCamera;
 u16 gTotalCameraPixelOffsetY;
 u16 gTotalCameraPixelOffsetX;
@@ -53,12 +53,50 @@ static void UpdateCameraTileOffset(void)
     sFieldCameraOffset.yTileOffset = (COORDS_TO_GRID(sFieldCameraOffset.yPixelOffset) * 2) % 32;
 }
 
+static void GetCameraMinMax(int *minX, int *minY, int *maxX, int *maxY)
+{
+    *minX = GRID_TO_COORDS(4);
+    *minY = GRID_TO_COORDS(4);
+    *maxX = GRID_TO_COORDS(gMapHeader.mapLayout->width - 4);
+    *maxY = GRID_TO_COORDS(gMapHeader.mapLayout->height - 4);
+}
+
 void SetCameraPosition(int x, int y)
 {
-    sCameraPosition.x = x;
-    sCameraPosition.y = y;
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+
     gFieldCamera.x = x;
     gFieldCamera.y = y;
+
+    GetCameraMinMax(&minX, &minY, &maxX, &maxY);
+
+    if (x < minX)
+    {
+        if (!IsConnectionAvailable(CONNECTION_WEST))
+            x = minX;
+    }
+    else if (x > maxX)
+    {
+        if (!IsConnectionAvailable(CONNECTION_EAST))
+            x = maxX;
+    }
+
+    if (y < minY)
+    {
+        if (!IsConnectionAvailable(CONNECTION_NORTH))
+            y = minY;
+    }
+    else if (y > maxY)
+    {
+        if (!IsConnectionAvailable(CONNECTION_SOUTH))
+            y = maxY;
+    }
+
+    gCameraPosition.x = x;
+    gCameraPosition.y = y;
 
     sFieldCameraOffset.xPixelOffset = x;
     sFieldCameraOffset.yPixelOffset = y;
@@ -67,21 +105,24 @@ void SetCameraPosition(int x, int y)
 
 void OffsetCameraPosition(int x, int y)
 {
-    gTotalCameraPixelOffsetX = -(gSaveBlock1Ptr->pos.x >> OBJECT_EVENT_FRAC_SHIFT);
-    gTotalCameraPixelOffsetY = -(gSaveBlock1Ptr->pos.y >> OBJECT_EVENT_FRAC_SHIFT);
+    gCameraPosition.x += x;
+    gCameraPosition.y += y;
 
-    sCameraPosition.x += x;
-    sCameraPosition.y += y;
+    gTotalCameraPixelOffsetX = -(gCameraPosition.x >> OBJECT_EVENT_FRAC_SHIFT);
+    gTotalCameraPixelOffsetY = -(gCameraPosition.y >> OBJECT_EVENT_FRAC_SHIFT);
 
-    sFieldCameraOffset.xPixelOffset += x;
-    sFieldCameraOffset.yPixelOffset += y;
-    UpdateCameraTileOffset();
+    if (x != 0 || y != 0)
+    {
+        sFieldCameraOffset.xPixelOffset += x;
+        sFieldCameraOffset.yPixelOffset += y;
+        UpdateCameraTileOffset();
+    }
 }
 
 void OffsetCameraPositionForTransition(int x, int y)
 {
-    sCameraPosition.x -= x;
-    sCameraPosition.y -= y;
+    gCameraPosition.x -= x;
+    gCameraPosition.y -= y;
     gFieldCamera.x -= x;
     gFieldCamera.y -= y;
     gSprites[gFieldCamera.spriteId].x -= x;
@@ -116,7 +157,7 @@ void GetCameraOffsetWithPan(s16 *x, s16 *y)
 
 void DrawWholeMapView(void)
 {
-    DrawWholeMapViewInternal(COORDS_TO_GRID(gSaveBlock1Ptr->pos.x), COORDS_TO_GRID(gSaveBlock1Ptr->pos.y), gMapHeader.mapLayout);
+    DrawWholeMapViewInternal(COORDS_TO_GRID(gCameraPosition.x), COORDS_TO_GRID(gCameraPosition.y), gMapHeader.mapLayout);
     sFieldCameraOffset.copyBGToVRAM = TRUE;
 }
 
@@ -149,8 +190,8 @@ static void DrawWholeMapViewInternal(int x, int y, const struct MapLayout *mapLa
 static void RedrawMapSlicesForCameraUpdate(struct FieldCameraOffset *cameraOffset, int x, int y)
 {
     const struct MapLayout *mapLayout = gMapHeader.mapLayout;
-    int viewX = COORDS_TO_GRID(sCameraPosition.x);
-    int viewY = COORDS_TO_GRID(sCameraPosition.y);
+    int viewX = COORDS_TO_GRID(gCameraPosition.x);
+    int viewY = COORDS_TO_GRID(gCameraPosition.y);
 
     if (x > 0)
         RedrawMapSliceWest(cameraOffset, mapLayout, viewX, viewY);
@@ -464,7 +505,7 @@ static void DrawMetatileHalfRight(const struct MapLayout *mapLayout, u16 offset,
 
 static s32 MapPosToBgTilemapOffset(struct FieldCameraOffset *cameraOffset, s32 x, s32 y)
 {
-    x -= COORDS_TO_GRID(sCameraPosition.x);
+    x -= COORDS_TO_GRID(gCameraPosition.x);
     x *= 2;
     if (x >= 32 || x < 0)
         return -1;
@@ -472,7 +513,7 @@ static s32 MapPosToBgTilemapOffset(struct FieldCameraOffset *cameraOffset, s32 x
     if (x >= 32)
         x -= 32;
 
-    y = (y - COORDS_TO_GRID(sCameraPosition.y)) * 2;
+    y = (y - COORDS_TO_GRID(gCameraPosition.y)) * 2;
     if (y >= 32 || y < 0)
         return -1;
     y = y + cameraOffset->yTileOffset;
@@ -514,6 +555,12 @@ void CameraUpdate(void)
     int deltaY;
     int movementSpeedX;
     int movementSpeedY;
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    int newPosX;
+    int newPosY;
 
     if (gFieldCamera.callback != NULL)
         gFieldCamera.callback(&gFieldCamera);
@@ -523,22 +570,52 @@ void CameraUpdate(void)
     gFieldCamera.x += movementSpeedX;
     gFieldCamera.y += movementSpeedY;
 
-#if 0
-    deltaX = gFieldCamera.x - sCameraPosition.x;
-    deltaY = gFieldCamera.y - sCameraPosition.y;
+    newPosX = gFieldCamera.x;
+    newPosY = gFieldCamera.y;
 
-    movementSpeedX = deltaX >> 3;
-    movementSpeedY = deltaY >> 3;
-#endif
+    GetCameraMinMax(&minX, &minY, &maxX, &maxY);
+
+    if (gFieldCamera.x < minX)
+    {
+        if (!IsConnectionAvailable(CONNECTION_WEST))
+        {
+            newPosX = minX;
+        }
+    }
+    else if (gFieldCamera.x > maxX)
+    {
+        if (!IsConnectionAvailable(CONNECTION_EAST))
+        {
+            newPosX = maxX;
+        }
+    }
+
+    if (gFieldCamera.y < minY)
+    {
+        if (!IsConnectionAvailable(CONNECTION_NORTH))
+        {
+            newPosY = minY;
+        }
+    }
+    else if (gFieldCamera.y > maxY)
+    {
+        if (!IsConnectionAvailable(CONNECTION_SOUTH))
+        {
+            newPosY = maxY;
+        }
+    }
+
+    deltaX = newPosX - gCameraPosition.x;
+    deltaY = newPosY - gCameraPosition.y;
 
     if (movementSpeedX != 0 || movementSpeedY != 0)
     {
         CameraMove(movementSpeedX, movementSpeedY);
-        OffsetCameraPosition(movementSpeedX, movementSpeedY);
+        OffsetCameraPosition(deltaX, deltaY);
         UpdateObjectEventsForCameraUpdate();
         SetBerryTreesSeen();
         RotatingGatePuzzleCameraUpdate();
-        RedrawMapSlicesForCameraUpdate(&sFieldCameraOffset, movementSpeedX, movementSpeedY);
+        RedrawMapSlicesForCameraUpdate(&sFieldCameraOffset, deltaX, deltaY);
     }
 }
 

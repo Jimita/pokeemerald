@@ -517,10 +517,13 @@ static void MoveMapViewToBackup(u8 direction)
     int x2, y2;
     u16 *src, *dest;
     int srci, desti;
+    int r9, r8;
     int x, y;
     int i, j;
     mapView = gSaveBlock1Ptr->mapView;
     width = gBackupMapLayout.width;
+    r9 = 0;
+    r8 = 0;
     x0 = COORDS_TO_GRID(gSaveBlock1Ptr->pos.x);
     y0 = COORDS_TO_GRID(gSaveBlock1Ptr->pos.y);
     x2 = MAP_OFFSET_W;
@@ -528,15 +531,19 @@ static void MoveMapViewToBackup(u8 direction)
     switch (direction)
     {
     case CONNECTION_NORTH:
+        y0 += 1;
         y2 = MAP_OFFSET_H - 1;
         break;
     case CONNECTION_SOUTH:
+        r8 = 1;
         y2 = MAP_OFFSET_H - 1;
         break;
     case CONNECTION_WEST:
+        x0 += 1;
         x2 = MAP_OFFSET_W - 1;
         break;
     case CONNECTION_EAST:
+        r9 = 1;
         x2 = MAP_OFFSET_W - 1;
         break;
     }
@@ -547,7 +554,7 @@ static void MoveMapViewToBackup(u8 direction)
         for (x = 0; x < x2; x++)
         {
             desti = width * (y + y0);
-            srci = y * MAP_OFFSET_W;
+            srci = (y + r8) * MAP_OFFSET_W + r9;
             src = &mapView[srci + i];
             dest = &sBackupMapData[x0 + desti + j];
             *dest = *src;
@@ -669,12 +676,36 @@ bool8 CameraMove(int x, int y)
         gCamera.active = TRUE;
         gCamera.x = old_x - gSaveBlock1Ptr->pos.x;
         gCamera.y = old_y - gSaveBlock1Ptr->pos.y;
-        MoveMapViewToBackup(direction);
         gSaveBlock1Ptr->pos.x += x;
         gSaveBlock1Ptr->pos.y += y;
+        MoveMapViewToBackup(direction);
         OffsetCameraPositionForTransition(gCamera.x, gCamera.y);
     }
     return gCamera.active;
+}
+
+bool8 IsConnectionAvailable(u8 connection)
+{
+    if (connection == CONNECTION_EAST)
+    {
+        return sMapConnectionFlags.east == TRUE;
+    }
+    else if (connection == CONNECTION_WEST)
+    {
+        return sMapConnectionFlags.west == TRUE;
+    }
+    else if (connection == CONNECTION_SOUTH)
+    {
+        return sMapConnectionFlags.south == TRUE;
+    }
+    else if (connection == CONNECTION_NORTH)
+    {
+        return sMapConnectionFlags.north == TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
 }
 
 static struct MapConnection *GetIncomingConnection(u8 direction, int x, int y)

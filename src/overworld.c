@@ -1916,6 +1916,8 @@ static bool32 LoadMapInStepsLocal(u8 *state, bool32 a2)
         (*state)++;
         break;
     case 3:
+        // Oh God I hope this doesn't break anything
+        ResetFieldCamera();
         InitObjectEventsLocal();
         SetCameraToTrackPlayer();
         (*state)++;
@@ -1927,42 +1929,38 @@ static bool32 LoadMapInStepsLocal(u8 *state, bool32 a2)
         (*state)++;
         break;
     case 5:
-        ResetFieldCamera();
-        (*state)++;
-        break;
-    case 6:
         CopyPrimaryTilesetToVram(gMapHeader.mapLayout);
         (*state)++;
         break;
-    case 7:
+    case 6:
         CopySecondaryTilesetToVram(gMapHeader.mapLayout);
         (*state)++;
         break;
-    case 8:
+    case 7:
         if (FreeTempTileDataBuffersIfPossible() != TRUE)
         {
             LoadMapTilesetPalettes(gMapHeader.mapLayout);
             (*state)++;
         }
         break;
-    case 9:
+    case 8:
         DrawWholeMapView();
         (*state)++;
         break;
-    case 10:
+    case 9:
         InitTilesetAnimations();
         (*state)++;
         break;
-    case 11:
+    case 10:
         if (gMapHeader.showMapName == TRUE && SecretBaseMapPopupEnabled() == TRUE)
             ShowMapNamePopup();
         (*state)++;
         break;
-    case 12:
+    case 11:
         if (RunFieldCallback())
             (*state)++;
         break;
-    case 13:
+    case 12:
         return TRUE;
     }
 

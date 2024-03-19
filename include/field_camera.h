@@ -11,6 +11,7 @@ struct CameraObject
     s32 y;
 };
 
+extern struct Coords16 gCameraPosition;
 extern struct CameraObject gFieldCamera;
 extern u16 gTotalCameraPixelOffsetX;
 extern u16 gTotalCameraPixelOffsetY;

@@ -1773,10 +1773,10 @@ void TrySpawnObjectEvents(void)
 
     if (gMapHeader.events != NULL)
     {
-        s16 left = COORDS_TO_GRID(gSaveBlock1Ptr->pos.x) - 2;
-        s16 right = COORDS_TO_GRID(gSaveBlock1Ptr->pos.x) + MAP_OFFSET_W + 2;
-        s16 top = COORDS_TO_GRID(gSaveBlock1Ptr->pos.y);
-        s16 bottom = COORDS_TO_GRID(gSaveBlock1Ptr->pos.y) + MAP_OFFSET_H + 2;
+        s16 left = COORDS_TO_GRID(gCameraPosition.x) - 2;
+        s16 right = COORDS_TO_GRID(gCameraPosition.x) + MAP_OFFSET_W + 2;
+        s16 top = COORDS_TO_GRID(gCameraPosition.y);
+        s16 bottom = COORDS_TO_GRID(gCameraPosition.y) + MAP_OFFSET_H + 2;
 
         if (InBattlePyramid())
             objectCount = GetNumBattlePyramidObjectEvents();
@@ -1822,10 +1822,10 @@ void RemoveObjectEventsOutsideView(void)
 
 static void RemoveObjectEventIfOutsideView(struct ObjectEvent *objectEvent)
 {
-    s16 left =   gSaveBlock1Ptr->pos.x - GRID_TO_COORDS(2);
-    s16 right =  gSaveBlock1Ptr->pos.x + GRID_TO_COORDS(17);
-    s16 top =    gSaveBlock1Ptr->pos.y;
-    s16 bottom = gSaveBlock1Ptr->pos.y + GRID_TO_COORDS(16);
+    s16 left =   gCameraPosition.x - GRID_TO_COORDS(2);
+    s16 right =  gCameraPosition.x + GRID_TO_COORDS(17);
+    s16 top =    gCameraPosition.y;
+    s16 bottom = gCameraPosition.y + GRID_TO_COORDS(16);
 
     if (objectEvent->currentCoords.x >= left && objectEvent->currentCoords.x <= right
      && objectEvent->currentCoords.y >= top && objectEvent->currentCoords.y <= bottom)
@@ -5137,16 +5137,16 @@ static void MoveCoordsInDirection(u32 dir, s16 *x, s16 *y, s16 deltaX, s16 delta
 
 void GetMapCoordsFromSpritePos(s16 x, s16 y, s16 *destX, s16 *destY)
 {
-    *destX = x - gSaveBlock1Ptr->pos.x;
-    *destY = y - gSaveBlock1Ptr->pos.y;
+    *destX = x - gCameraPosition.x;
+    *destY = y - gCameraPosition.y;
     *destX -= gTotalCameraPixelOffsetX;
     *destY -= gTotalCameraPixelOffsetY;
 }
 
 void SetSpritePosToMapCoords(s16 mapX, s16 mapY, s16 *destX, s16 *destY)
 {
-    s16 px = mapX - gSaveBlock1Ptr->pos.x;
-    s16 py = mapY - gSaveBlock1Ptr->pos.y;
+    s16 px = mapX - gCameraPosition.x;
+    s16 py = mapY - gCameraPosition.y;
     s16 dx = -gTotalCameraPixelOffsetX;
     s16 dy = -gTotalCameraPixelOffsetY;
 

@@ -44,6 +44,7 @@ extern const u16 gStandardMenuPalette[];
 
 void FreeAllOverworldWindowBuffers(void);
 void InitStandardTextBoxWindows(void);
+void InitDialogTextBoxWindows(void);
 void InitTextBoxGfxAndPrinters(void);
 u16 RunTextPrintersAndIsPrinter0Active(void);
 void LoadMessageBoxAndBorderGfx(void);
