@@ -264,11 +264,11 @@ static void InitLinkTestBG(u8 paletteNum, u8 bgNum, u8 screenBaseBlock, u8 charB
         case 1:
             ClearGpuBackgroundState(1);
             SetGpuBackgroundPriority(1, 1);
-            SetGpuBackgroundCharBaseBlock(charBaseBlock);
+            SetGpuBackgroundCharBaseBlock(1, charBaseBlock);
             SetGpuBackgroundScreenBaseBlock(1, screenBaseBlock);
             break;
         case 2:
-            ClearGpuBackgroundState(1);
+            ClearGpuBackgroundState(2);
             SetGpuBackgroundPriority(2, 1);
             SetGpuBackgroundCharBaseBlock(2, charBaseBlock);
             SetGpuBackgroundScreenBaseBlock(2, screenBaseBlock);

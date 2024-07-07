@@ -1,48 +1,5 @@
 #include "gba/m4a_internal.h"
 
-// Some of these functions have different signatures, so we need to make this
-// an array of void pointers or a struct. It's simpler to just make it an array
-// for now.
-void * const gMPlayJumpTableTemplate[] =
-{
-    MP2K_event_fine,
-    MP2K_event_goto,
-    MP2K_event_patt,
-    MP2K_event_pend,
-    MP2K_event_rept,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_prio,
-    MP2K_event_tempo,
-    MP2K_event_keysh,
-    MP2K_event_voice,
-    MP2K_event_vol,
-    MP2K_event_pan,
-    MP2K_event_bend,
-    MP2K_event_bendr,
-    MP2K_event_lfos,
-    MP2K_event_lfodl,
-    MP2K_event_mod,
-    MP2K_event_modt,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_tune,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_port,
-    MP2K_event_fine,
-    MP2K_event_endtie,
-    SampleFreqSet,
-    TrackStop,
-    FadeOutBody,
-    TrkVolPitSet,
-    MP2KClearChain,
-    SoundMainBTM,
-};
-
 // This is a table of deltas between sample values in compressed PCM data.
 const s8 gDeltaEncodingTable[] =
 {

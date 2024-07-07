@@ -2,8 +2,6 @@
 #define MUSIC_PLAYER_H
 
 #include "gba/types.h"
-//#include "m4a.h"
-#include "sound_mixer.h"
 
 #define PLAYER_UNLOCKED 0x68736D53
 #define PLAYER_LOCKED PLAYER_UNLOCKED+1

@@ -81,6 +81,8 @@ struct GameBorder {
 
 extern struct GameBorder borderList[NUM_GAME_BORDERS];
 
+void GameInit(void);
+void GameLoop(void);
 void AgbMain(void);
 void FrameUpdate(void);
 void DoHBlankUpdate(void);

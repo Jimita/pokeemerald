@@ -6,6 +6,7 @@
 #include "main.h"
 #include "save.h"
 #include "palette.h"
+#include "platform.h"
 #include "gpu_regs.h"
 #include "bg.h"
 #include "text_window.h"

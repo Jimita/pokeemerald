@@ -129,6 +129,7 @@ u8 GetCurrentRegionMapSectionId(void);
 u8 GetCurrentMapBattleScene(void);
 void ReInitOverworldBgs(void);
 void CleanupOverworldWindowsAndTilemaps(void);
+struct ObjectEventTemplate *GetObjectEventTemplatesForLocation(struct WarpData *location);
 bool32 IsOverworldLinkActive(void);
 void CB1_Overworld(void);
 void CB2_OverworldBasic(void);

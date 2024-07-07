@@ -1928,7 +1928,7 @@ static void ChooseBoxMenu_PrintInfo(void)
     u8 windowId;
     u8 *boxName = GetBoxNamePtr(sChooseBoxMenu->curBox);
     u8 numInBox = CountMonsInBox(sChooseBoxMenu->curBox);
-    u32 winTileData;
+    void *winTileData;
     s32 center;
 
     memset(&template, 0, sizeof(template));
@@ -1948,8 +1948,8 @@ static void ChooseBoxMenu_PrintInfo(void)
     center = GetStringCenterAlignXOffset(FONT_NORMAL, numBoxMonsText, 64);
     AddTextPrinterParameterized3(windowId, FONT_NORMAL, center, 17, sChooseBoxMenu_TextColors, TEXT_SKIP_DRAW, numBoxMonsText);
 
-    winTileData = GetWindowTileDataPtr(windowId);
-    CpuCopy32((void *)winTileData, (void *)OBJ_VRAM0 + 0x100 + (GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) * 32), 0x400);
+    winTileData = (void *)GetWindowTileDataPtr(windowId);
+    CpuCopy32(winTileData, (void *)OBJ_VRAM0 + 0x100 + (GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) * 32), 0x400);
 
     RemoveWindow(windowId);
 }

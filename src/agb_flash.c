@@ -303,8 +303,10 @@ u32 ProgramFlashSectorAndVerify(u16 sectorNum, u8 *src)
         if (result != 0)
             continue;
 
+#ifndef PORTABLE
         result = VerifyFlashSector(sectorNum, src);
         if (result == 0)
+#endif
             break;
     }
 
@@ -322,8 +324,10 @@ u32 ProgramFlashSectorAndVerifyNBytes(u16 sectorNum, u8 *src, u32 n)
         if (result != 0)
             continue;
 
+#ifndef PORTABLE
         result = VerifyFlashSectorNBytes(sectorNum, src, n);
         if (result == 0)
+#endif
             break;
     }
 

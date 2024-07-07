@@ -1,5 +1,6 @@
 #include <string.h>
 #include "gba/m4a_internal.h"
+#include "sound_mixer.h"
 
 #include "cgb_audio.h"
 
@@ -8,7 +9,6 @@ extern const u8 gCgb3Vol[];
 struct SoundInfo gSoundInfo;
 struct PokemonCrySong gPokemonCrySongs[MAX_POKEMON_CRIES];
 struct MusicPlayerInfo gPokemonCryMusicPlayers[MAX_POKEMON_CRIES];
-MPlayFunc gMPlayJumpTable[36];
 struct CgbChannel gCgbChans[4];
 struct MusicPlayerTrack gPokemonCryTracks[MAX_POKEMON_CRIES * 2];
 struct PokemonCrySong gPokemonCrySong;
@@ -22,35 +22,49 @@ struct MusicPlayerTrack gMPlayTrack_SE2[9];
 struct MusicPlayerTrack gMPlayTrack_SE3[1];
 u8 gMPlayMemAccArea[0x10];
 
+static MPlayFunc gMPlayJumpTable[36] = {
+    MP2K_event_fine,
+    MP2K_event_goto,
+    MP2K_event_patt,
+    MP2K_event_pend,
+    MP2K_event_rept,
+    MP2K_event_fine,
+    MP2K_event_fine,
+    MP2K_event_fine,
+    ply_memacc, // was MP2K_event_fine
+    MP2K_event_prio,
+    MP2K_event_tempo,
+    MP2K_event_keysh,
+    MP2K_event_voice,
+    MP2K_event_vol,
+    MP2K_event_pan,
+    MP2K_event_bend,
+    MP2K_event_bendr,
+    MP2K_event_lfos,
+    MP2K_event_lfodl,
+    MP2K_event_mod,
+    MP2K_event_modt,
+    MP2K_event_fine,
+    MP2K_event_fine,
+    MP2K_event_tune,
+    MP2K_event_fine,
+    MP2K_event_fine,
+    MP2K_event_fine,
+    MP2K_event_port,
+    ply_xcmd, // was MP2K_event_fine
+    MP2K_event_endtie,
+    SampleFreqSet,
+    TrackStop,
+    FadeOutBody,
+    TrkVolPitSet,
+    MP2KClearChain,
+    SoundMainBTM
+};
+
 bool8 gSoundInit = FALSE;
 
 void MP2K_event_nxx();
 void MP2KPlayerMain();
-
-u32 MidiKeyToFreq(struct WaveData *wav, u8 key, u8 fineAdjust)
-{
-    u32 val1;
-    u32 val2;
-    u32 fineAdjustShifted = fineAdjust << 24;
-
-    if (key > 178)
-    {
-        key = 178;
-        fineAdjustShifted = 255 << 24;
-    }
-
-    val1 = gScaleTable[key];
-    val1 = gFreqTable[val1 & 0xF] >> (val1 >> 4);
-
-    val2 = gScaleTable[key + 1];
-    val2 = gFreqTable[val2 & 0xF] >> (val2 >> 4);
-
-    return umul3232H32(wav->freq, val1 + umul3232H32(val2 - val1, fineAdjustShifted));
-}
-
-void UnusedDummyFunc(void)
-{
-}
 
 void MPlayContinue(struct MusicPlayerInfo *mplayInfo)
 {
@@ -295,16 +309,6 @@ void MPlayExtender(struct CgbChannel *cgbChans)
 
     soundInfo->ident++;
 
-    gMPlayJumpTable[8] = ply_memacc;
-    gMPlayJumpTable[17] = MP2K_event_lfos;
-    gMPlayJumpTable[19] = MP2K_event_mod;
-    gMPlayJumpTable[28] = ply_xcmd;
-    gMPlayJumpTable[29] = MP2K_event_endtie;
-    gMPlayJumpTable[30] = SampleFreqSet;
-    gMPlayJumpTable[31] = TrackStop;
-    gMPlayJumpTable[32] = FadeOutBody;
-    gMPlayJumpTable[33] = TrkVolPitSet;
-
     soundInfo->cgbChans = cgbChans;
     soundInfo->CgbSound = CgbSound;
     soundInfo->CgbOscOff = CgbOscOff;
@@ -327,14 +331,12 @@ void MPlayExtender(struct CgbChannel *cgbChans)
 
 void ClearChain(void *x)
 {
-    void (*func)(void *) = *(&gMPlayJumpTable[34]);
-    func(x);
+    MP2KClearChain(x);
 }
 
 void Clear64byte(void *x)
 {
-    void (*func)(void *) = *(&gMPlayJumpTable[35]);
-    func(x);
+    SoundMainBTM(x);
 }
 
 void SoundInit(struct SoundInfo *soundInfo)
@@ -361,8 +363,6 @@ void SoundInit(struct SoundInfo *soundInfo)
     soundInfo->CgbOscOff = (CgbOscOffFunc)DummyFunc;
     soundInfo->MidiKeyToCgbFreq = (MidiKeyToCgbFreqFunc)DummyFunc;
     soundInfo->ExtVolPit = (ExtVolPitFunc)DummyFunc;
-
-    MPlayJumpTableCopy(gMPlayJumpTable);
 
     soundInfo->MPlayJumpTable = gMPlayJumpTable;
 
@@ -600,7 +600,7 @@ void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader
 
         while (i < songHeader->trackCount && i < mplayInfo->trackCount)
         {
-            TrackStop(mplayInfo, track);
+            TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
             track->flags = MPT_FLG_EXIST | MPT_FLG_START;
             track->chan = 0;
             track->cmdPtr = songHeader->part[i];
@@ -610,7 +610,7 @@ void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader
 
         while (i < mplayInfo->trackCount)
         {
-            TrackStop(mplayInfo, track);
+            TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
             track->flags = 0;
             i++;
             track++;
@@ -639,7 +639,7 @@ void m4aMPlayStop(struct MusicPlayerInfo *mplayInfo)
 
     while (i > 0)
     {
-        TrackStop(mplayInfo, track);
+        TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
         i--;
         track++;
     }
@@ -679,7 +679,7 @@ void FadeOutBody(struct MusicPlayerInfo *mplayInfo)
             {
                 u32 val;
 
-                TrackStop(mplayInfo, track);
+                TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
 
                 val = TEMPORARY_FADE;
                 fadeOV = mplayInfo->fadeOV;
@@ -1479,8 +1479,7 @@ void ply_memacc(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *trac
 
 cond_true:
     {
-        // *& is required for matching
-        (*&gMPlayJumpTable[1])(mplayInfo, track);
+        MP2K_event_goto((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
         return;
     }
 
@@ -1498,7 +1497,7 @@ void ply_xcmd(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
 
 void ply_xxx(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
 {
-    gMPlayJumpTable[0](mplayInfo, track);
+    MP2K_event_fine((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
 }
 
 #define READ_XCMD_BYTE(var, n)       \

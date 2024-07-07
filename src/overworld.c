@@ -811,7 +811,7 @@ const struct MapConnection *GetMapConnection(u8 dir)
     return NULL;
 }
 
-const struct ObjectEventTemplate *GetObjectEventTemplatesForLocation(struct WarpData *location)
+struct ObjectEventTemplate *GetObjectEventTemplatesForLocation(struct WarpData *location)
 {
     if (location->mapNum == gSaveBlock1Ptr->location.mapNum
     && location->mapGroup == gSaveBlock1Ptr->location.mapGroup)
@@ -1558,7 +1558,6 @@ void ReInitOverworldBgs(void)
 {
     struct BgTemplate overworldBgTemplates[4];
 
-    size_t screenSize;
     size_t tilemapWidth = 1, tilemapHeight = 1;
 
     int mapWidth = (gMapHeader.mapLayout->width + MAP_OFFSET_W) * 16;
@@ -1577,7 +1576,6 @@ void ReInitOverworldBgs(void)
         overworldBgTemplates[i].screenHeight = tilemapHeight;
     }
 
-    screenSize = BG_SCREEN_SIZE;
     gOverworldTilemapWidth = tilemapWidth / 8;
     InitBgsFromTemplates(0, overworldBgTemplates, ARRAY_COUNT(overworldBgTemplates));
     SetBgAttribute(1, BG_ATTR_MOSAIC, 1);

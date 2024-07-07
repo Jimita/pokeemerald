@@ -7,8 +7,6 @@
 #define MIXER_UNLOCKED 0x68736D53
 #define MIXER_LOCKED PLAYER_UNLOCKED+1
 
-typedef void (*MixerRamFunc)(struct SoundMixerState *, u32, u16, s8 *, u16);
-
 struct MixerSource {
     u8 status;
     u8 type;
@@ -111,5 +109,7 @@ struct SoundMixerState {
     __attribute__((aligned(4))) float outBuffer[MIXED_AUDIO_BUFFER_SIZE * 2];
     //s8 outBuffer[MIXED_AUDIO_BUFFER_SIZE * 2];
 };
+
+void RunMixerFrame(void);
 
 #endif//SOUND_MIXER_H

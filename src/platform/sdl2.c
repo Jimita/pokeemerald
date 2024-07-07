@@ -848,7 +848,7 @@ static void CPUWriteByte(void *dest, uint8_t val)
 
 void LZ77UnCompVram(const u32 *src_, void *dest_)
 {
-    const u8 *src = src_;
+    const u8 *src = (const u8 *)src_;
     u8 *dest = dest_;
     int destSize = (src[3] << 16) | (src[2] << 8) | src[1];
     int srcPos = 4;
@@ -899,7 +899,7 @@ fail:
 
 void LZ77UnCompWram(const u32 *src, void *dst)
 {
-    const uint8_t *source = src;
+    const uint8_t *source = (const uint8_t *)src;
     uint8_t *dest = dst;
 
     uint32_t header = CPUReadMemory(source);
@@ -1013,7 +1013,7 @@ void RLUnCompVram(const void *src, void *dest)
                 if ((u32)dest_u32 & 1)
                 {
                     halfWord |= block << 8;
-                    CPUWriteHalfWord((u32)dest_u32 ^ 1, halfWord);
+                    CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
                 }
                 else
                     halfWord = block;
@@ -1031,7 +1031,7 @@ void RLUnCompVram(const void *src, void *dest)
                 if ((u32)dest_u32 & 1)
                 {
                     halfWord |= byte << 8;
-                    CPUWriteHalfWord((u32)dest_u32 ^ 1, halfWord);
+                    CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
                 }
                 else
                     halfWord = byte;
@@ -1045,7 +1045,7 @@ void RLUnCompVram(const void *src, void *dest)
         dest_u32++;
     }
     for (; padding > 0; padding -= 2, dest_u32 += 2)
-        CPUWriteHalfWord(dest_u32, 0);
+        CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), 0);
 }
 
 const s16 sineTable[256] = {
@@ -1698,7 +1698,7 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
             for (int local_x = -half_width; local_x <= half_width; local_x++)
             {
                 uint8_t *tiledata = (uint8_t *)objtiles;
-                uint16_t *palette = OBJ_PLTT;
+                uint16_t *palette = (uint16_t *)OBJ_PLTT;
                 int local_mosaicX;
                 int tex_x;
                 int tex_y;
@@ -2357,7 +2357,7 @@ static void DrawBorder(uint16_t *image)
 {
     struct DisplayBorder *border = GetBorder(currentBorder);
     if (!border)
-        return NULL;
+        return;
 
     if (shouldRedrawBorder == FALSE)
     {

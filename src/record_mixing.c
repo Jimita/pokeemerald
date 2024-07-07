@@ -108,7 +108,7 @@ static void Task_MixingRecordsRecv(u8);
 static void Task_SendPacket(u8);
 static void Task_CopyReceiveBuffer(u8);
 static void Task_SendPacket_SwitchToReceive(u8);
-static void *LoadPtrFromTaskData(const void **);
+static void *LoadPtrFromTaskData(void **);
 static void StorePtrInTaskData(void *, void **);
 static u8 GetMultiplayerId_(void);
 static void *GetPlayerRecvBuffer(u8);
@@ -580,7 +580,7 @@ static void Task_SendPacket_SwitchToReceive(u8 taskId)
     sReadyToReceive = TRUE;
 }
 
-static void *LoadPtrFromTaskData(const void **ptrPtr)
+static void *LoadPtrFromTaskData(void **ptrPtr)
 {
     return (void *)(*ptrPtr);
 }

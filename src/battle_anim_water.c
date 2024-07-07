@@ -800,8 +800,8 @@ void AnimTask_CreateSurfWave(u8 taskId)
 {
     struct BattleAnimBgData animBg;
     u8 taskId2;
-    u16 *x;
-    u16 *y;
+    u32 *x;
+    u32 *y;
 
     x = &gBattle_BG1_X;
     y = &gBattle_BG1_Y;
@@ -879,8 +879,8 @@ static void AnimTask_CreateSurfWave_Step1(u8 taskId)
     struct BattleAnimBgData animBg;
     u8 i;
     u16 rgbBuffer;
-    u16 *BGptrX = &gBattle_BG1_X;
-    u16 *BGptrY = &gBattle_BG1_Y;
+    u32 *BGptrX = &gBattle_BG1_X;
+    u32 *BGptrY = &gBattle_BG1_Y;
 
     *BGptrX += gTasks[taskId].data[0];
     *BGptrY += gTasks[taskId].data[1];
@@ -919,8 +919,8 @@ static void AnimTask_CreateSurfWave_Step1(u8 taskId)
 
 static void AnimTask_CreateSurfWave_Step2(u8 taskId)
 {
-    u16 *BGptrX = &gBattle_BG1_X;
-    u16 *BGptrY = &gBattle_BG1_Y;
+    u32 *BGptrX = &gBattle_BG1_X;
+    u32 *BGptrY = &gBattle_BG1_Y;
     if (gTasks[taskId].data[0] == 0)
     {
         ClearBattleAnimBg(1);

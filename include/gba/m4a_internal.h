@@ -378,10 +378,6 @@ extern struct PokemonCrySong gPokemonCrySongs[];
 extern struct MusicPlayerInfo gPokemonCryMusicPlayers[];
 extern struct MusicPlayerTrack gPokemonCryTracks[];
 
-extern char SoundMainRAM[];
-
-extern MPlayFunc gMPlayJumpTable[];
-
 typedef void (*XcmdFunc)(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 extern const XcmdFunc gXcmdTable[];
 
@@ -439,7 +435,6 @@ void CgbOscOff(u8);
 void CgbModVol(struct CgbChannel *chan);
 u32 MidiKeyToCgbFreq(u8, u8, u8);
 void DummyFunc(void);
-void MPlayJumpTableCopy(void **mplayJumpTable);
 void SampleFreqSet(u32 freq);
 void m4aSoundVSyncOn(void);
 void m4aSoundVSyncOff(void);

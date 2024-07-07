@@ -765,7 +765,7 @@ void DoContestHallWarp(void)
     CreateTask(Task_DoContestHallWarp, 10);
 }
 
-static void SetFlashScanlineEffectWindowBoundary(u16 *dest, u32 y, s32 left, s32 right)
+static void SetFlashScanlineEffectWindowBoundary(u32 *dest, u32 y, s32 left, s32 right)
 {
     if (y <= 160)
     {
@@ -781,7 +781,7 @@ static void SetFlashScanlineEffectWindowBoundary(u16 *dest, u32 y, s32 left, s32
     }
 }
 
-static void SetFlashScanlineEffectWindowBoundaries(u16 *dest, s32 centerX, s32 centerY, s32 radius)
+static void SetFlashScanlineEffectWindowBoundaries(u32 *dest, s32 centerX, s32 centerY, s32 radius)
 {
     s32 r = radius;
     s32 v2 = radius;
@@ -802,7 +802,7 @@ static void SetFlashScanlineEffectWindowBoundaries(u16 *dest, s32 centerX, s32 c
     }
 }
 
-static void SetOrbFlashScanlineEffectWindowBoundary(u16 *dest, u32 y, s32 left, s32 right)
+static void SetOrbFlashScanlineEffectWindowBoundary(u32 *dest, u32 y, s32 left, s32 right)
 {
     if (y <= 160)
     {

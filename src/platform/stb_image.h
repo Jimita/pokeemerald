@@ -1366,7 +1366,7 @@ static FILE *stbi__fopen(char const *filename, char const *mode)
 }
 
 
-static void *stbi__copy_output_palette(stbi__context *s, unsigned char **palette, int *palette_len)
+static void stbi__copy_output_palette(stbi__context *s, unsigned char **palette, int *palette_len)
 {
    if (!palette || !palette_len)
       return;

@@ -1315,7 +1315,7 @@ static void SetupPokenavMenuScanlineEffects(void)
     SetGpuState(GPU_STATE_BLDY, 0);
     SetGpuStateBits(GPU_STATE_DISPCNT, DISPCNT_WIN0_ON);
     SetGpuWindowIn(GetGpuWindowIn() | WININ_WIN0_ALL);
-    SetGpuWindowOut(SetGpuWindowOut() | WINOUT_WIN01_BG_ALL | WINOUT_WIN01_OBJ);
+    SetGpuWindowOut(GetGpuWindowOut() | WINOUT_WIN01_BG_ALL | WINOUT_WIN01_OBJ);
     SetGpuWindowY(0, DisplayHeight());
     ScanlineEffect_Stop();
     SetMenuOptionGlow();

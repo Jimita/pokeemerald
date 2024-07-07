@@ -26,6 +26,7 @@
 #include "pokemon_icon.h"
 #include "trainer_pokemon_sprites.h"
 #include "contest_util.h"
+#include "menu_helpers.h"
 #include "constants/songs.h"
 #include "constants/game_stat.h"
 #include "constants/battle_frontier.h"
@@ -367,9 +368,7 @@ static void CloseTrainerCard(u8 taskId)
     FreeAllWindowBuffers();
     FREE_AND_SET_NULL(sData);
     DestroyTask(taskId);
-#ifdef PORTABLE
     SetVBlankHBlankCallbacksToNull(); // UB: fixes use after free of sData in VBlank callback
-#endif
 }
 
 // States for Task_TrainerCard. Skips the initial states, which are done once in order

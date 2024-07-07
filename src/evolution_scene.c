@@ -1549,10 +1549,10 @@ static void CreateBgAnimTask(bool8 isLink)
 
 static void Task_AnimateBg(u8 taskId)
 {
-    u16 *outer_X, *outer_Y;
+    u32 *outer_X, *outer_Y;
 
-    u16 *inner_X = &gBattle_BG1_X;
-    u16 *inner_Y = &gBattle_BG1_Y;
+    u32 *inner_X = &gBattle_BG1_X;
+    u32 *inner_Y = &gBattle_BG1_Y;
 
     if (!gTasks[taskId].tIsLink)
     {

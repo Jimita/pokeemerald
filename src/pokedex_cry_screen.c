@@ -354,17 +354,17 @@ static void PlayCryScreenCry(u16 species)
 static void BufferCryWaveformSegment(void)
 {
     u8 i;
-    s8 *baseBuffer;
-    s8 *buffer;
+    float *baseBuffer;
+    float *buffer;
 
     if (gPcmDmaCounter < 2)
         baseBuffer = gSoundInfo.pcmBuffer;
     else
         baseBuffer = gSoundInfo.pcmBuffer + (gSoundInfo.pcmDmaPeriod + 1 - gPcmDmaCounter) * gSoundInfo.pcmSamplesPerVBlank;
 
-    buffer = baseBuffer + 0x630;
+    buffer = baseBuffer + (0x630 * sizeof(*baseBuffer));
     for (i = 0; i < ARRAY_COUNT(sDexCryScreen->cryWaveformBuffer); i++)
-        sDexCryScreen->cryWaveformBuffer[i] = buffer[i * 2] * 2;
+        sDexCryScreen->cryWaveformBuffer[i] = (u8)((buffer[i * 2] * 2) * 256.0);
 }
 
 static void DrawWaveformFlatline(void)

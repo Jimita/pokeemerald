@@ -596,7 +596,7 @@ static const TransitionStateFunc sShredSplit_Funcs[] =
     ShredSplit_End
 };
 
-static const u8 sShredSplit_SectionYCoords[] = {39, DISPLAY_HEIGHT - 41};
+static const u16 sShredSplit_SectionYCoords[] = {39, BASE_DISPLAY_HEIGHT - 41};
 static const s16 sShredSplit_SectionMoveDirs[] = {1, -1};
 
 static const TransitionStateFunc sBlackhole_Funcs[] =
@@ -2893,7 +2893,7 @@ static bool8 ShredSplit_Init(struct Task *task)
 static bool8 ShredSplit_Main(struct Task *task)
 {
     u16 i, j, k;
-    u8 baseY[ARRAY_COUNT(sShredSplit_SectionYCoords)];
+    u16 baseY[ARRAY_COUNT(sShredSplit_SectionYCoords)];
     s16 moveDirs[ARRAY_COUNT(sShredSplit_SectionMoveDirs)];
     u8 linesFinished;
     u32 *ptr4, *ptr3, *ptr1, *ptr2;
