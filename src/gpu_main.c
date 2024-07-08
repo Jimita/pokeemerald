@@ -9,7 +9,6 @@ void GpuInit(void)
 {
     gpu.gfxDataSize = BG_CHAR_SIZE * NUM_CHAR_BLOCKS;
     gpu.tileMapsSize = BG_SCREEN_SIZE * NUM_SCREEN_BLOCKS;
-    gpu.spriteGfxDataSize = 32000;
 
     gpu.gfxData = malloc(gpu.gfxDataSize);
     if (!gpu.gfxData)
@@ -17,10 +16,6 @@ void GpuInit(void)
 
     gpu.tileMaps = malloc(gpu.tileMapsSize);
     if (!gpu.tileMaps)
-        abort();
-
-    gpu.spriteGfxData = malloc(gpu.spriteGfxDataSize);
-    if (!gpu.spriteGfxData)
         abort();
 
     GpuClearAll();
@@ -32,7 +27,6 @@ void GpuClearData(void)
 {
     memset(gpu.gfxData, 0, gpu.gfxDataSize);
     memset(gpu.tileMaps, 0, gpu.tileMapsSize);
-    memset(gpu.spriteGfxData, 0, gpu.spriteGfxDataSize);
 }
 
 void GpuClearSprites(void)

@@ -82,7 +82,6 @@ struct GpuState
 {
     u8 *gfxData;
     u8 *tileMaps;
-    u8 *spriteGfxData;
 
     struct OamData spriteList[MAX_OAM_SPRITES];
     struct GpuMatrix spriteMatrices[MAX_OAM_SPRITES];
@@ -91,7 +90,6 @@ struct GpuState
 
     size_t gfxDataSize;
     size_t tileMapsSize;
-    size_t spriteGfxDataSize;
 
     u32 displayControl;
     u32 displayStatus;

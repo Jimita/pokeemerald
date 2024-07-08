@@ -189,6 +189,8 @@ static void CB2_QuitContestPainting(void)
     FREE_AND_SET_NULL(gContestPaintingMonPalette);
     FREE_AND_SET_NULL(gContestMonPixels);
     RemoveWindow(sWindowId);
+    gMain.oamBuffer[0].tileData = NULL;
+    Free(gImageProcessingContext.dest);
     Free(GetBgTilemapBuffer(1));
     FreeMonSpritesGfx();
 }
@@ -523,6 +525,8 @@ static void LoadContestPaintingFrame(u8 contestWinnerId, bool8 isForArtist)
 static void InitPaintingMonOamData(u8 contestWinnerId)
 {
     gMain.oamBuffer[0] = sContestPaintingMonOamData;
+    gMain.oamBuffer[0].tileData = gImageProcessingContext.dest;
+    gMain.oamBuffer[0].tileDataSize = MON_PIC_SIZE;
     gMain.oamBuffer[0].tileNum = 0;
 
     if (contestWinnerId > 1)
@@ -598,7 +602,7 @@ static void DoContestPaintingImageProcessing(u8 imageEffect)
 
     gImageProcessingContext.var_16 = 2;
     gImageProcessingContext.effect = imageEffect;
-    gImageProcessingContext.dest = (void *)OBJ_VRAM0;
+    gImageProcessingContext.dest = Alloc(MON_PIC_SIZE);
 
     ApplyImageProcessingEffects(&gImageProcessingContext);
     ApplyImageProcessingQuantization(&gImageProcessingContext);

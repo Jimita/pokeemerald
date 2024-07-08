@@ -19,7 +19,7 @@ void LZDecompressVram(const u32 *src, void *dest)
     LZ77UnCompVram(src, dest);
 }
 
-u16 LoadCompressedSpriteSheet(const struct CompressedSpriteSheet *src)
+u8 *LoadCompressedSpriteSheet(const struct CompressedSpriteSheet *src)
 {
     struct SpriteSheet dest;
 

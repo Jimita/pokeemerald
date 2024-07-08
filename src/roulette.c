@@ -1440,6 +1440,13 @@ static bool8 CanMoveSelectionInDir(s16 *selectionId, u8 dir)
     return FALSE;
 }
 
+static void SetSpriteGfx(struct Sprite *sprite, u8 offset)
+{
+    sprite->oam.tileData = sprite->sheetTileStart;
+    sprite->oam.tileDataSize = sprite->sheetDataSize;
+    sprite->oam.tileNum = (*sprite->anims + offset)->type;
+}
+
 static void ProcessBetGridInput(u8 taskId)
 {
     u8 headerOffset = 0;
@@ -1462,17 +1469,13 @@ static void ProcessBetGridInput(u8 taskId)
         // Switch all the poke (column) headers to gray outlines
         for (i = 0; i < NUM_BOARD_POKES; i++)
         {
-            gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].anims)->type;
+            SetSpriteGfx(&gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]], 0);
         }
         // If the current selection is a column with at least 1 unhit space, fill in the header
         if ((u16)(gTasks[taskId].tSelectionId - 1) < COL_MAKUHITA && !(sRoulette->hitFlags & sGridSelections[gTasks[taskId].tSelectionId].flag))
         {
             headerOffset = gTasks[taskId].tSelectionId - 1;
-            gSprites[sRoulette->spriteIds[headerOffset + SPR_POKE_HEADERS]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[headerOffset + SPR_POKE_HEADERS]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[headerOffset + SPR_POKE_HEADERS]].anims + 1)->type;
+            SetSpriteGfx(&gSprites[sRoulette->spriteIds[headerOffset + SPR_POKE_HEADERS]], 1);
         }
     }
 }
@@ -1902,9 +1905,7 @@ static void Task_TryPrintEndTurnMsg(u8 taskId)
     gSprites[sRoulette->spriteIds[SPR_WIN_SLOT_CURSOR]].invisible = TRUE;
     for (i = 0; i < NUM_BOARD_POKES; i++)
     {
-        gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]].anims)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[i + SPR_POKE_HEADERS]], 0);
     }
     if (gTasks[taskId].tCoins >= sRoulette->minBet)
     {
@@ -3753,9 +3754,7 @@ static void SetCreditDigits(u16 num)
         if (digit > 0 || printZero || i == MAX_COIN_DIGITS - 1)
         {
             gSprites[sRoulette->spriteIds[i + SPR_CREDIT_DIGITS]].invisible = FALSE;
-            gSprites[sRoulette->spriteIds[i + SPR_CREDIT_DIGITS]].oam.tileNum =
-                gSprites[sRoulette->spriteIds[i + SPR_CREDIT_DIGITS]].sheetTileStart
-                + (*gSprites[sRoulette->spriteIds[i + SPR_CREDIT_DIGITS]].anims + digit)->type;
+            SetSpriteGfx(&gSprites[sRoulette->spriteIds[i + SPR_CREDIT_DIGITS]], digit);
             printZero = TRUE;
         }
         num = num % d;
@@ -3795,7 +3794,9 @@ static void SetMultiplierSprite(u8 selectionId)
 {
     struct Sprite *sprite = &gSprites[sRoulette->spriteIds[SPR_MULTIPLIER]];
     sprite->animCmdIndex = GetMultiplierAnimId(selectionId);
-    sprite->oam.tileNum = sprite->sheetTileStart + (*sprite->anims + sprite->animCmdIndex)->type;
+    sprite->oam.tileData = sprite->sheetTileStart;
+    sprite->oam.tileDataSize = sprite->sheetDataSize;
+    sprite->oam.tileNum = (*sprite->anims + sprite->animCmdIndex)->type;
 }
 
 static void SetBallCounterNumLeft(u8 numBalls)
@@ -3810,43 +3811,29 @@ static void SetBallCounterNumLeft(u8 numBalls)
         for (i = 0; i < BALLS_PER_ROUND / 2; i++)
         {
             gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].invisible = FALSE;
-            gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].oam.tileNum =
-                gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].sheetTileStart
-                + (*gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].anims)->type;
+            SetSpriteGfx(&gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]], 0);
         }
         break;
     case 5:
-        gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].anims + t + 1)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]], t + 1);
         break;
     case 4:
-        gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]].anims + t + 2)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_3]], t + 2);
         break;
     case 3:
-        gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].anims + t + 1)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]], t + 1);
         break;
     case 2:
-        gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]].anims + t + 2)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_2]], t + 2);
         break;
     case 1:
-        gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_1]].oam.tileNum =
-            gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_1]].sheetTileStart
-            + (*gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_1]].anims + t + 1)->type;
+        SetSpriteGfx(&gSprites[sRoulette->spriteIds[SPR_BALL_COUNTER_1]], t + 1);
         break;
     case 0:
     default:
         for (i = 0; i < BALLS_PER_ROUND / 2; i++)
         {
-            gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].oam.tileNum =
-                gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].sheetTileStart
-                + (*gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]].anims + t + 2)->type;
+            SetSpriteGfx(&gSprites[sRoulette->spriteIds[i + SPR_BALL_COUNTER]], t + 2);
         }
     }
 }

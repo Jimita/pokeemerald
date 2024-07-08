@@ -190,7 +190,7 @@ static EWRAM_DATA struct {
     u8 filler_6A[5];
     u8 callbackId;
     u8 neverRead_70;
-    u16 bottomTextTileStart;
+    u8 *bottomTextTileStart;
     u8 drawSelectedMonState[2];
     u8 selectedMonIdx[2];
     u8 playerSelectStatus;
@@ -1193,7 +1193,7 @@ static bool8 BufferTradeParties(void)
 
 static void PrintIsThisTradeOkay(void)
 {
-    DrawBottomRowText(sText_IsThisTradeOkay, (void *)(OBJ_VRAM0 + (sTradeMenu->bottomTextTileStart * 32)), 24);
+    DrawBottomRowText(sText_IsThisTradeOkay, (void *)sTradeMenu->bottomTextTileStart, 24);
 }
 
 static void Leader_ReadLinkBuffer(u8 mpId, u8 status)
@@ -1485,7 +1485,7 @@ static void CB_ProcessMenuInput(void)
             // Selected Cancel
             CreateYesNoMenu(&sTradeYesNoWindowTemplate, 1, 14, 0);
             sTradeMenu->callbackId = CB_CANCEL_TRADE_PROMPT;
-            DrawBottomRowText(sActionTexts[TEXT_CANCEL_TRADE], (void *)(OBJ_VRAM0 + sTradeMenu->bottomTextTileStart * 32), 24);
+            DrawBottomRowText(sActionTexts[TEXT_CANCEL_TRADE], (void *)sTradeMenu->bottomTextTileStart, 24);
         }
     }
 }
@@ -1495,7 +1495,7 @@ static void RedrawChooseAPokemonWindow(void)
     PrintTradePartnerPartyNicknames();
     sTradeMenu->callbackId = CB_MAIN_MENU;
     gSprites[sTradeMenu->cursorSpriteId].invisible = FALSE;
-    DrawBottomRowText(sActionTexts[TEXT_CHOOSE_MON], (void *)(OBJ_VRAM0 + sTradeMenu->bottomTextTileStart * 32), 24);
+    DrawBottomRowText(sActionTexts[TEXT_CHOOSE_MON], (void *)sTradeMenu->bottomTextTileStart, 24);
 }
 
 static void CB_ProcessSelectedMonInput(void)
@@ -2125,7 +2125,7 @@ static void RedrawPartyWindow(u8 whichParty)
     PrintPartyLevelsAndGenders(whichParty);
     PrintPartyNicknames(whichParty);
     ShowTradePartyMonIcons(whichParty);
-    DrawBottomRowText(sActionTexts[TEXT_CHOOSE_MON], (void *)(OBJ_VRAM0 + (sTradeMenu->bottomTextTileStart * 32)), 24);
+    DrawBottomRowText(sActionTexts[TEXT_CHOOSE_MON], (void *)sTradeMenu->bottomTextTileStart, 24);
     sTradeMenu->drawSelectedMonState[whichParty] = 0;
 }
 

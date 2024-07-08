@@ -460,6 +460,7 @@ struct PokemonStorageSystemData
     struct Sprite **releaseMonSpritePtr;
     u16 numIconsPerSpecies[MAX_MON_ICONS];
     u16 iconSpeciesList[MAX_MON_ICONS];
+    u8 *iconGfxList[MAX_MON_ICONS];
     u16 boxSpecies[IN_BOX_COUNT];
     u32 boxPersonalities[IN_BOX_COUNT];
     u8 incomingBoxId;
@@ -514,7 +515,7 @@ struct PokemonStorageSystemData
     u8 shiftBoxId;
     struct Sprite *markingComboSprite;
     struct Sprite *waveformSprites[2];
-    u16 *markingComboTilesPtr;
+    u8 *markingComboTilesPtr;
     struct MonMarkingsMenu markMenu;
     struct ChooseBoxMenu chooseBoxMenu;
     struct Pokemon movingMon;
@@ -1949,7 +1950,7 @@ static void ChooseBoxMenu_PrintInfo(void)
     AddTextPrinterParameterized3(windowId, FONT_NORMAL, center, 17, sChooseBoxMenu_TextColors, TEXT_SKIP_DRAW, numBoxMonsText);
 
     winTileData = (void *)GetWindowTileDataPtr(windowId);
-    CpuCopy32(winTileData, (void *)OBJ_VRAM0 + 0x100 + (GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) * 32), 0x400);
+    CpuCopy32(winTileData, GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) + (8 * TILE_SIZE_4BPP), 0x400);
 
     RemoveWindow(windowId);
 }
@@ -2053,12 +2054,11 @@ static void ResetForPokeStorage(void)
 {
     ResetPaletteFade();
     ResetSpriteData();
-    FreeSpriteTileRanges();
+    FreeSpriteSheets();
     FreeAllSpritePalettes();
     SetBorder(GAME_BORDER_EMERALD_MENU);
     SetBorderFade(32, 0);
     EnableBorder();
-    gReservedSpriteTileCount = 0x280;
     UnkUtil_Init(&sStorage->unkUtil, sStorage->unkUtilData, ARRAY_COUNT(sStorage->unkUtilData));
     gKeyRepeatStartDelay = 20;
     ClearScheduledBgCopiesToVram();
@@ -3883,7 +3883,7 @@ static void CreateMarkingComboSprite(void)
     sStorage->markingComboSprite->subpriority = 1;
     sStorage->markingComboSprite->x = 40;
     sStorage->markingComboSprite->y = 150;
-    sStorage->markingComboTilesPtr = (void *) OBJ_VRAM0 + 32 * GetSpriteTileStartByTag(GFXTAG_MARKING_COMBO);
+    sStorage->markingComboTilesPtr = GetSpriteTileStartByTag(GFXTAG_MARKING_COMBO);
 }
 
 static void CreateWaveformSprites(void)
@@ -3941,7 +3941,7 @@ static void SpriteCB_DisplayMonMosaic(struct Sprite *sprite)
 static void CreateDisplayMonSprite(void)
 {
     u16 i;
-    u16 tileStart;
+    u8 *tileStart;
     u8 palSlot;
     u8 spriteId;
     struct SpriteSheet sheet = {sStorage->tileBuffer, MON_PIC_SIZE, GFXTAG_DISPLAY_MON};
@@ -3958,7 +3958,7 @@ static void CreateDisplayMonSprite(void)
     do
     {
         tileStart = LoadSpriteSheet(&sheet);
-        if (tileStart == 0)
+        if (tileStart == NULL)
             break;
 
         palSlot = LoadSpritePalette(&palette);
@@ -3971,7 +3971,7 @@ static void CreateDisplayMonSprite(void)
 
         sStorage->displayMonSprite = &gSprites[spriteId];
         sStorage->displayMonPalOffset = OBJ_PLTT_ID(palSlot);
-        sStorage->displayMonTilePtr = (void *) OBJ_VRAM0 + tileStart * TILE_SIZE_4BPP;
+        sStorage->displayMonTilePtr = (void *)tileStart;
     } while (0);
 
     if (sStorage->displayMonSprite == NULL)
@@ -4429,6 +4429,8 @@ static void InitMonIconFields(void)
         sStorage->numIconsPerSpecies[i] = 0;
     for (i = 0; i < MAX_MON_ICONS; i++)
         sStorage->iconSpeciesList[i] = SPECIES_NONE;
+    for (i = 0; i < MAX_MON_ICONS; i++)
+        sStorage->iconGfxList[i] = NULL;
     for (i = 0; i < PARTY_SIZE; i++)
         sStorage->partySprites[i] = NULL;
     for (i = 0; i < IN_BOX_COUNT; i++)
@@ -5118,9 +5120,10 @@ static void SpriteCB_HeldMon(struct Sprite *sprite)
     sprite->y = sStorage->cursorSprite->y + sStorage->cursorSprite->y2 + 4;
 }
 
-static u16 TryLoadMonIconTiles(u16 species)
+static u8 *TryLoadMonIconTiles(u16 species)
 {
-    u16 i, offset;
+    u16 i;
+    u32 size;
 
     // Search icon list for this species
     for (i = 0; i < MAX_MON_ICONS; i++)
@@ -5141,16 +5144,21 @@ static u16 TryLoadMonIconTiles(u16 species)
 
         // Failed to find an empty spot
         if (i == MAX_MON_ICONS)
-            return 0xFFFF;
+            return NULL;
     }
 
     // Add species to icon list and load tiles
     sStorage->iconSpeciesList[i] = species;
     sStorage->numIconsPerSpecies[i]++;
-    offset = 16 * i;
-    CpuCopy32(GetMonIconTiles(species, TRUE), (void *)(OBJ_VRAM0) + offset * TILE_SIZE_4BPP, 0x200);
 
-    return offset;
+    size = 16 * TILE_SIZE_4BPP;
+
+    if (sStorage->iconGfxList[i] == NULL)
+        sStorage->iconGfxList[i] = Alloc(size);
+
+    CpuCopy32(GetMonIconTiles(species, TRUE), (void *)sStorage->iconGfxList[i], size);
+
+    return sStorage->iconGfxList[i];
 }
 
 static void RemoveSpeciesFromIconList(u16 species)
@@ -5162,7 +5170,11 @@ static void RemoveSpeciesFromIconList(u16 species)
         if (sStorage->iconSpeciesList[i] == species)
         {
             if (--sStorage->numIconsPerSpecies[i] == 0)
+            {
+                Free(sStorage->iconGfxList[i]);
                 sStorage->iconSpeciesList[i] = SPECIES_NONE;
+                sStorage->iconGfxList[i] = NULL;
+            }
             break;
         }
     }
@@ -5170,14 +5182,14 @@ static void RemoveSpeciesFromIconList(u16 species)
 
 static struct Sprite *CreateMonIconSprite(u16 species, u32 personality, s16 x, s16 y, u8 oamPriority, u8 subpriority)
 {
-    u16 tileNum;
+    u8 *tileData;
     u8 spriteId;
     struct SpriteTemplate template = sSpriteTemplate_MonIcon;
 
     species = GetIconSpecies(species, personality);
     template.paletteTag = PALTAG_MON_ICON_0 + gMonIconPaletteIndices[species];
-    tileNum = TryLoadMonIconTiles(species);
-    if (tileNum == 0xFFFF)
+    tileData = TryLoadMonIconTiles(species);
+    if (tileData == NULL)
         return NULL;
 
     spriteId = CreateSprite(&template, x, y, subpriority);
@@ -5187,7 +5199,9 @@ static struct Sprite *CreateMonIconSprite(u16 species, u32 personality, s16 x, s
         return NULL;
     }
 
-    gSprites[spriteId].oam.tileNum = tileNum;
+    gSprites[spriteId].oam.tileData = tileData;
+    gSprites[spriteId].oam.tileDataSize = 16 * TILE_SIZE_4BPP;
+    gSprites[spriteId].oam.tileNum = 0;
     gSprites[spriteId].oam.priority = oamPriority;
     gSprites[spriteId].data[0] = species;
     return &gSprites[spriteId];
@@ -8773,7 +8787,7 @@ static void CreateItemIconSprites(void)
         {
             spriteSheet.tag = GFXTAG_ITEM_ICON_0 + i;
             LoadCompressedSpriteSheet(&spriteSheet);
-            sStorage->itemIcons[i].tiles = GetSpriteTileStartByTag(spriteSheet.tag) * TILE_SIZE_4BPP + (void *)(OBJ_VRAM0);
+            sStorage->itemIcons[i].tiles = GetSpriteTileStartByTag(spriteSheet.tag);
             sStorage->itemIcons[i].palIndex = AllocSpritePalette(PALTAG_ITEM_ICON_0 + i);
             sStorage->itemIcons[i].palIndex = OBJ_PLTT_ID(sStorage->itemIcons[i].palIndex);
             spriteTemplate.tileTag = GFXTAG_ITEM_ICON_0 + i;

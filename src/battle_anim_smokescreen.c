@@ -168,7 +168,7 @@ u8 SmokescreenImpact(s16 x, s16 y, bool8 persist)
     u8 spriteId1, spriteId2, spriteId3, spriteId4;
     struct Sprite *mainSprite;
 
-    if (GetSpriteTileStartByTag(sSmokescreenImpactSpriteSheet.tag) == 0xFFFF)
+    if (GetSpriteTileStartByTag(sSmokescreenImpactSpriteSheet.tag) == NULL)
     {
         LoadCompressedSpriteSheetUsingHeap(&sSmokescreenImpactSpriteSheet);
         LoadCompressedSpritePaletteUsingHeap(&sSmokescreenImpactSpritePalette);

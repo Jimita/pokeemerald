@@ -1187,7 +1187,7 @@ static void AllocMatchCallSprites(void)
     spriteSheet.data = gfx->trainerPicGfx;
     spriteSheet.size = sizeof(gfx->trainerPicGfx);
     spriteSheet.tag = GFXTAG_TRAINER_PIC;
-    gfx->trainerPicGfxPtr = (u8 *)OBJ_VRAM0 + LoadSpriteSheet(&spriteSheet) * 0x20;
+    gfx->trainerPicGfxPtr = LoadSpriteSheet(&spriteSheet);
     paletteNum = AllocSpritePalette(PALTAG_TRAINER_PIC);
     gfx->trainerPicPalOffset = OBJ_PLTT_ID(paletteNum);
     gfx->trainerPicSprite = CreateTrainerPicSprite();

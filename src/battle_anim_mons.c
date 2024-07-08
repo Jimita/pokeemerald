@@ -2088,7 +2088,7 @@ u8 GetBattlerSpriteBGPriorityRank(u8 battlerId)
 u8 CreateAdditionalMonSpriteForMoveAnim(u16 species, bool8 isBackpic, u8 id, s16 x, s16 y, u8 subpriority, u32 personality, u32 trainerId, u32 battlerId, bool32 ignoreDeoxysForm)
 {
     u8 spriteId;
-    u16 sheet = LoadSpriteSheet(&sSpriteSheets_MoveEffectMons[id]);
+    u8 *sheet = LoadSpriteSheet(&sSpriteSheets_MoveEffectMons[id]);
     u16 palette = AllocSpritePalette(sSpriteTemplates_MoveEffectMons[id].paletteTag);
 
     if (gMonSpritesGfxPtr != NULL && gMonSpritesGfxPtr->buffer == NULL)
@@ -2126,7 +2126,7 @@ u8 CreateAdditionalMonSpriteForMoveAnim(u16 species, bool8 isBackpic, u8 id, s16
                                  FALSE);
     }
 
-    RequestDma3Copy(gMonSpritesGfxPtr->buffer, (void *)(OBJ_VRAM0 + (sheet * 0x20)), MON_PIC_SIZE, 1);
+    RequestDma3Copy(gMonSpritesGfxPtr->buffer, (void *)sheet, MON_PIC_SIZE, 1);
     FREE_AND_SET_NULL(gMonSpritesGfxPtr->buffer);
 
     if (!isBackpic)

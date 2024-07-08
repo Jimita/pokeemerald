@@ -131,7 +131,6 @@ struct Pokenav_ConditionMenuGfx
     s16 monTransitionX;
     u8 monPicSpriteId;
     u16 monPalIndex;
-    u16 monGfxTileStart;
     void *monGfxPtr;
     u8 nameGenderWindowId;
     u8 listIndexWindowId;
@@ -818,7 +817,7 @@ static void CreateConditionMonPic(u8 id)
         sprSheet.data = GetConditionMonPicGfx(id);
         sprPal.data = GetConditionMonPal(id);
         menu->monPalIndex = LoadSpritePalette(&sprPal);
-        menu->monGfxTileStart = LoadSpriteSheet(&sprSheet);
+        menu->monGfxPtr = (void *)LoadSpriteSheet(&sprSheet);
         spriteId = CreateSprite(&sprTemplate, 38, 104, 0);
         menu->monPicSpriteId = spriteId;
         if (spriteId == MAX_SPRITES)
@@ -831,7 +830,6 @@ static void CreateConditionMonPic(u8 id)
         {
             menu->monPicSpriteId = spriteId;
             gSprites[menu->monPicSpriteId].callback = MonPicGfxSpriteCallback;
-            menu->monGfxPtr = (void *)gpu.spriteGfxData + (menu->monGfxTileStart * 32);
             menu->monPalIndex = OBJ_PLTT_ID(menu->monPalIndex);
         }
     }

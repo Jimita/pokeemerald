@@ -68,20 +68,7 @@ extern void * INTR_VECTOR;
 
 #define NUM_BACKGROUNDS 4
 
-// text-mode BG
-#define OBJ_VRAM0      (gpu.spriteGfxData)
-#define OBJ_VRAM0_SIZE (gpu.spriteGfxDataSize)
-
-// bitmap-mode BG
-#define OBJ_VRAM1      (gpu.spriteGfxData)
-#define OBJ_VRAM1_SIZE (gpu.spriteGfxDataSize)
-
-#define OAM_SIZE 0x400
-#ifndef PORTABLE
-#define OAM      0x7000000
-#else
 #define OAM      (void*)(gpu.spriteList)
-#endif
 
 #define ROM_HEADER_SIZE   0xC0
 

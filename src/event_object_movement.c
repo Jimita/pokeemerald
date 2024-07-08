@@ -8662,9 +8662,13 @@ void SetVirtualObjectGraphics(u8 virtualObjId, u8 graphicsId)
     {
         struct Sprite *sprite = &gSprites[spriteId];
         const struct ObjectEventGraphicsInfo *graphicsInfo = GetObjectEventGraphicsInfo(graphicsId);
+        u8 *tileData = sprite->oam.tileData;
+        u32 tileDataSize = sprite->oam.tileDataSize;
         u16 tileNum = sprite->oam.tileNum;
 
         sprite->oam = *graphicsInfo->oam;
+        sprite->oam.tileData = tileData;
+        sprite->oam.tileDataSize = tileDataSize;
         sprite->oam.tileNum = tileNum;
         sprite->oam.paletteNum = graphicsInfo->paletteSlot;
         sprite->images = graphicsInfo->images;

@@ -670,15 +670,18 @@ void UpdateRegionMapRightHeaderTiles(u32 menuGfxId)
 {
     struct Pokenav_MainMenu *menu = GetSubstructPtr(POKENAV_SUBSTRUCT_MAIN_MENU);
 
+    struct OamData *oam = &menu->leftHeaderSprites[1]->oam;
+
     if (menuGfxId == POKENAV_GFX_MAP_MENU_ZOOMED_OUT)
-        menu->leftHeaderSprites[1]->oam.tileNum = GetSpriteTileStartByTag(2) + 32;
+        oam->tileNum = 32;
     else
-        menu->leftHeaderSprites[1]->oam.tileNum = GetSpriteTileStartByTag(2) + 64;
+        oam->tileNum = 64;
 }
 
 static void LoadLeftHeaderGfxForMenu(u32 menuGfxId)
 {
     struct Pokenav_MainMenu *menu;
+    struct OamData *oam;
     u32 size, tag;
 
     if (menuGfxId >= POKENAV_GFX_SUBMENUS_START)
@@ -688,9 +691,14 @@ static void LoadLeftHeaderGfxForMenu(u32 menuGfxId)
     tag = sMenuLeftHeaderSpriteSheets[menuGfxId].tag;
     size = GetDecompressedDataSize(sMenuLeftHeaderSpriteSheets[menuGfxId].data);
     LoadPalette(&gPokenavLeftHeader_Pal[tag * 16], OBJ_PLTT_ID(IndexOfSpritePaletteTag(1)), PLTT_SIZE_4BPP);
+
+    oam = &menu->leftHeaderSprites[1]->oam;
+    oam->tileData = GetSpriteTileStartByTag(2);
+    oam->tileDataSize = GetSizeOfSpriteSheetByTag(2);
+    oam->tileNum = sMenuLeftHeaderSpriteSheets[menuGfxId].size;
+
     LZ77UnCompWram(sMenuLeftHeaderSpriteSheets[menuGfxId].data, gDecompressionBuffer);
-    RequestDma3Copy(gDecompressionBuffer, (void *)OBJ_VRAM0 + (GetSpriteTileStartByTag(2) * 32), size, 1);
-    menu->leftHeaderSprites[1]->oam.tileNum = GetSpriteTileStartByTag(2) + sMenuLeftHeaderSpriteSheets[menuGfxId].size;
+    RequestDma3Copy(gDecompressionBuffer, oam->tileData, size, 1);
 
     if (menuGfxId == POKENAV_GFX_MAP_MENU_ZOOMED_OUT || menuGfxId == POKENAV_GFX_MAP_MENU_ZOOMED_IN)
         menu->leftHeaderSprites[1]->x2 = 56;
@@ -709,7 +717,7 @@ static void LoadLeftHeaderGfxForSubMenu(u32 menuGfxId)
     size = GetDecompressedDataSize(sPokenavSubMenuLeftHeaderSpriteSheets[menuGfxId].data);
     LoadPalette(&gPokenavLeftHeader_Pal[tag * 16], OBJ_PLTT_ID(IndexOfSpritePaletteTag(2)), PLTT_SIZE_4BPP);
     LZ77UnCompWram(sPokenavSubMenuLeftHeaderSpriteSheets[menuGfxId].data, &gDecompressionBuffer[0x1000]);
-    RequestDma3Copy(&gDecompressionBuffer[0x1000], (void *)OBJ_VRAM0 + 0x800 + (GetSpriteTileStartByTag(2) * 32), size, 1);
+    RequestDma3Copy(&gDecompressionBuffer[0x1000], GetSpriteTileStartByTag(2) + (64 * TILE_SIZE_4BPP), size, 1);
 }
 
 void ShowLeftHeaderGfx(u32 menuGfxId, bool32 isMain, bool32 isOnRightSide)

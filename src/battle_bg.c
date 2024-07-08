@@ -34,9 +34,6 @@ struct BattleBackground
     const void *palette;
 };
 
-// .rodata
-static const u16 sUnrefArray[] = {0x0300, 0x0000}; //OamData?
-
 static const struct OamData sVsLetter_V_OamData =
 {
     .y = 0,
@@ -1130,11 +1127,9 @@ void DrawBattleEntryBackground(void)
     if (gBattleTypeFlags & BATTLE_TYPE_LINK)
     {
         LZDecompressVram(gBattleVSFrame_Gfx, (void *)(BG_CHAR_ADDR(1)));
-        LZDecompressVram(gVsLettersGfx, (void *)OBJ_VRAM0);
         LoadCompressedPalette(gBattleVSFrame_Pal, BG_PLTT_ID(6), PLTT_SIZE_4BPP);
         SetBgAttribute(1, BG_ATTR_SCREENWIDTH, 512);
         SetBgAttribute(1, BG_ATTR_SCREENHEIGHT, 256);
-        // SetGpuState(GPU_STATE_BG1CNT, 0x5C04);
         ClearGpuBackgroundState(1);
         SetGpuBackgroundCharBaseBlock(1, 1);
         SetGpuBackgroundScreenBaseBlock(1, 24);

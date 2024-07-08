@@ -1227,7 +1227,7 @@ static void SlotMachineSetup_InitPalsSpritesTasks(void)
 {
     ResetPaletteFade();
     ResetSpriteData();
-    gOamLimit = 0x80;
+    gOamLimit = MAX_OAM_SPRITES;
     FreeAllSpritePalettes();
     ResetTasks();
 }

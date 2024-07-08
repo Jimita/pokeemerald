@@ -856,7 +856,8 @@ static void DrawOptionLabelGfx(const u16 *const *optionGfx, s32 yPos, s32 deltaY
 {
     s32 i, j;
     struct Pokenav_MenuGfx * gfx = GetSubstructPtr(POKENAV_SUBSTRUCT_MENU_GFX);
-    s32 baseTile = GetSpriteTileStartByTag(GFXTAG_OPTIONS);
+    u8 *baseTile = GetSpriteTileStartByTag(GFXTAG_OPTIONS);
+    u32 tileDataSize = GetSizeOfSpriteSheetByTag(GFXTAG_OPTIONS);
 
     for (i = 0; i < MAX_POKENAV_MENUITEMS; i++)
     {
@@ -864,7 +865,9 @@ static void DrawOptionLabelGfx(const u16 *const *optionGfx, s32 yPos, s32 deltaY
         {
             for (j = 0; j < NUM_OPTION_SUBSPRITES; j++)
             {
-                gfx->iconSprites[i][j]->oam.tileNum = (*optionGfx)[0] + baseTile + 8 * j;
+                gfx->iconSprites[i][j]->oam.tileData = baseTile;
+                gfx->iconSprites[i][j]->oam.tileDataSize = tileDataSize;
+                gfx->iconSprites[i][j]->oam.tileNum = (*optionGfx)[0] + 8 * j;
                 gfx->iconSprites[i][j]->oam.paletteNum = IndexOfSpritePaletteTag((*optionGfx)[1] + PALTAG_OPTIONS_START);
                 gfx->iconSprites[i][j]->invisible = TRUE;
                 gfx->iconSprites[i][j]->y = yPos;

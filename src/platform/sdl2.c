@@ -1572,7 +1572,6 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
     int i;
     unsigned int x;
     unsigned int y;
-    void *objtiles = gpu.spriteGfxData;
     unsigned int blendMode = (gpu.blendControl >> 6) & 3;
     bool winShouldBlendPixel = true;
 
@@ -1589,6 +1588,12 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
         unsigned int width;
         unsigned int height;
         uint16_t *pixels;
+
+        uint8_t *tiledata = (uint8_t *)oam->tileData;
+        if (tiledata == NULL)
+        {
+            continue;
+        }
 
         bool isAffine = oam->affineMode & 1;
         bool doubleSizeOrDisabled = (oam->affineMode >> 1) & 1;
@@ -1689,7 +1694,6 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
         if (vcount >= (y - half_height) && vcount < (y + half_height))
         {
             int local_y = (oam->mosaic == 1) ? applySpriteVerticalMosaicEffect(vcount) - y : vcount - y;
-            int number  = oam->tileNum;
             int palette = oam->paletteNum;
             bool flipX  = !isAffine && ((oam->matrixNum >> 3) & 1);
             bool flipY  = !isAffine && ((oam->matrixNum >> 4) & 1);
@@ -1697,7 +1701,6 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
 
             for (int local_x = -half_width; local_x <= half_width; local_x++)
             {
-                uint8_t *tiledata = (uint8_t *)objtiles;
                 uint16_t *palette = (uint16_t *)OBJ_PLTT;
                 int local_mosaicX;
                 int tex_x;
@@ -1736,19 +1739,28 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
                 int block_y = tex_y / 8;
                 int block_offset = ((block_y * (gpu.displayControl & 0x40 ? (width / 8) : 16)) + block_x);
                 uint16_t pixel = 0;
+                uint32_t offset;
 
                 if (!is8BPP)
                 {
-                    pixel = tiledata[(block_offset + oam->tileNum) * 32 + (tile_y * 4) + (tile_x / 2)];
-                    if (tile_x & 1)
-                        pixel >>= 4;
-                    else
-                        pixel &= 0xF;
-                    palette += oam->paletteNum * 16;
+                    offset = (block_offset + oam->tileNum) * TILE_SIZE_4BPP + (tile_y * 4) + (tile_x / 2);
+                    if (offset < oam->tileDataSize)
+                    {
+                        pixel = tiledata[offset];
+                        if (tile_x & 1)
+                            pixel >>= 4;
+                        else
+                            pixel &= 0xF;
+                        palette += oam->paletteNum * 16;
+                    }
                 }
                 else
                 {
-                    pixel = tiledata[(block_offset * 2 + oam->tileNum) * 32 + (tile_y * 8) + tile_x];
+                    offset = (block_offset * 2 + oam->tileNum) * TILE_SIZE_4BPP + (tile_y * 8) + tile_x;
+                    if (offset < oam->tileDataSize)
+                    {
+                        pixel = tiledata[offset];
+                    }
                 }
 
                 if (pixel != 0)

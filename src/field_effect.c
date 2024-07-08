@@ -774,7 +774,7 @@ u32 FieldEffectScript_ReadWord(u8 **script)
 void FieldEffectScript_LoadTiles(u8 **script)
 {
     struct SpriteSheet *sheet = (struct SpriteSheet *)FieldEffectScript_ReadWord(script);
-    if (GetSpriteTileStartByTag(sheet->tag) == 0xFFFF)
+    if (GetSpriteTileStartByTag(sheet->tag) == NULL)
         LoadSpriteSheet(sheet);
     (*script) += 4;
 }
@@ -803,7 +803,7 @@ void FieldEffectScript_CallNative(u8 **script, u32 *val)
 
 void FieldEffectFreeGraphicsResources(struct Sprite *sprite)
 {
-    u16 sheetTileStart = sprite->sheetTileStart;
+    u8 *sheetTileStart = sprite->sheetTileStart;
     u32 paletteNum = sprite->oam.paletteNum;
     DestroySprite(sprite);
     FieldEffectFreeTilesIfUnused(sheetTileStart);
@@ -816,7 +816,7 @@ void FieldEffectStop(struct Sprite *sprite, u8 id)
     FieldEffectActiveListRemove(id);
 }
 
-void FieldEffectFreeTilesIfUnused(u16 tileStart)
+void FieldEffectFreeTilesIfUnused(u8 *tileStart)
 {
     u8 i;
     u16 tag = GetSpriteTileTagByTileStart(tileStart);

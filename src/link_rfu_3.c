@@ -744,7 +744,6 @@ void CopyHostRfuGameDataAndUsername(struct RfuGameData *gameData, u8 *username)
 #define sCurrAnimNum  data[2]
 #define sFrameDelay   data[3]
 #define sFrameIdx     data[4]
-#define sTileStart    data[6]
 #define sValidator    data[7]
 #define STATUS_INDICATOR_ACTIVE 0x1234 // Used to validate active indicator
 
@@ -761,7 +760,6 @@ void CreateWirelessStatusIndicatorSprite(u8 x, u8 y)
     {
         sprId = CreateSprite(&sWirelessStatusIndicatorSpriteTemplate, x, y, 0);
         gSprites[sprId].sValidator = STATUS_INDICATOR_ACTIVE;
-        gSprites[sprId].sTileStart = GetSpriteTileStartByTag(sWirelessStatusIndicatorSpriteSheet.tag);
         gSprites[sprId].invisible = TRUE;
         gWirelessStatusIndicatorSpriteId = sprId;
     }
@@ -769,7 +767,6 @@ void CreateWirelessStatusIndicatorSprite(u8 x, u8 y)
     {
         gWirelessStatusIndicatorSpriteId = CreateSprite(&sWirelessStatusIndicatorSpriteTemplate, x, y, 0);
         gSprites[gWirelessStatusIndicatorSpriteId].sValidator = STATUS_INDICATOR_ACTIVE;
-        gSprites[gWirelessStatusIndicatorSpriteId].sTileStart = GetSpriteTileStartByTag(sWirelessStatusIndicatorSpriteSheet.tag);
         gSprites[gWirelessStatusIndicatorSpriteId].invisible = TRUE;
     }
 }
@@ -787,7 +784,7 @@ void DestroyWirelessStatusIndicatorSprite(void)
 
 void LoadWirelessStatusIndicatorSpriteGfx(void)
 {
-    if (GetSpriteTileStartByTag(sWirelessStatusIndicatorSpriteSheet.tag) == 0xFFFF)
+    if (GetSpriteTileStartByTag(sWirelessStatusIndicatorSpriteSheet.tag) == NULL)
         LoadCompressedSpriteSheet(&sWirelessStatusIndicatorSpriteSheet);
     LoadSpritePalette(&sWirelessStatusIndicatorSpritePalette);
     gWirelessStatusIndicatorSpriteId = SPRITE_NONE;
@@ -870,7 +867,9 @@ void UpdateWirelessStatusIndicatorSprite(void)
         gMain.oamBuffer[125].x = sprite->x + sprite->centerToCornerVecX;
         gMain.oamBuffer[125].y = sprite->y + sprite->centerToCornerVecY;
         gMain.oamBuffer[125].paletteNum = sprite->oam.paletteNum;
-        gMain.oamBuffer[125].tileNum = sprite->sTileStart + sprite->anims[sprite->sCurrAnimNum][sprite->sFrameIdx].frame.imageValue;
+        gMain.oamBuffer[125].tileNum = sprite->anims[sprite->sCurrAnimNum][sprite->sFrameIdx].frame.imageValue;
+        gMain.oamBuffer[125].tileData = sprite->oam.tileData;
+        gMain.oamBuffer[125].tileDataSize = sprite->oam.tileDataSize;
         CpuCopy16(&gMain.oamBuffer[125], (struct OamData *)OAM + 125, sizeof(struct OamData));
         if (RfuGetStatus() == RFU_STATUS_FATAL_ERROR)
             DestroyWirelessStatusIndicatorSprite();

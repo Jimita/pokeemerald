@@ -95,7 +95,6 @@ struct UsePokeblockMenu
     s16 curMonXOffset;
     u8 curMonSpriteId;
     u16 curMonPalette;
-    u16 curMonSheet;
     u8 *curMonTileStart;
     struct Sprite *sparkles[MAX_CONDITION_SPARKLES];
     struct Sprite *condition[2];
@@ -1225,7 +1224,7 @@ static void UpdateMonPic(u8 loadId)
         spriteSheet.data = sMenu->partySheets[loadId];
         spritePal.data = sMenu->partyPalettes[loadId];
         sMenu->curMonPalette = LoadSpritePalette(&spritePal);
-        sMenu->curMonSheet = LoadSpriteSheet(&spriteSheet);
+        sMenu->curMonTileStart = (void *)LoadSpriteSheet(&spriteSheet);
         spriteId = CreateSprite(&spriteTemplate, 38, 104, 0);
         sMenu->curMonSpriteId = spriteId;
         if (spriteId == MAX_SPRITES)
@@ -1239,7 +1238,6 @@ static void UpdateMonPic(u8 loadId)
             sMenu->curMonSpriteId = spriteId;
             gSprites[sMenu->curMonSpriteId].callback = SpriteCB_MonPic;
             gSprites[sMenu->curMonSpriteId].y2 -= 34;
-            sMenu->curMonTileStart = (void *)(OBJ_VRAM0 + (sMenu->curMonSheet * 32));
             sMenu->curMonPalette = OBJ_PLTT_ID(sMenu->curMonPalette);
         }
     }

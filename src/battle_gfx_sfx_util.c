@@ -987,7 +987,7 @@ void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 castform)
         }
 
         src = gMonSpritesGfxPtr->sprites.ptr[position];
-        dst = (void *)(OBJ_VRAM0 + gSprites[gBattlerSpriteIds[battlerAtk]].oam.tileNum * 32);
+        dst = (void *)(gSprites[battlerAtk].oam.tileData + gSprites[gBattlerSpriteIds[battlerAtk]].oam.tileNum * TILE_SIZE_4BPP);
         DmaCopy32(3, src, dst, MON_PIC_SIZE);
         paletteOffset = OBJ_PLTT_ID(battlerAtk);
         lzPaletteData = GetMonSpritePalFromSpeciesAndPersonality(targetSpecies, otId, personalityValue);

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "text.h"
 #include "main.h"
+#include "malloc.h"
 #include "palette.h"
 #include "graphics.h"
 #include "gpu_regs.h"
@@ -139,6 +140,9 @@ static const u8 sClockFrames[8][3] =
 static const u8 sSaveFailedClockPal[] = INCBIN_U8("graphics/misc/clock_small.gbapal");
 static const u32 sSaveFailedClockGfx[] = INCBIN_U32("graphics/misc/clock_small.4bpp.lz");
 
+static u8 *sSaveFailedClockGfxDecompressed = NULL;
+static u32 sSaveFailedClockGfxDecompressedSize = 0;
+
 static void CB2_SaveFailedScreen(void);
 static void CB2_WipeSave(void);
 static void CB2_GameplayCannotBeContinued(void);
@@ -200,7 +204,6 @@ static void CB2_SaveFailedScreen(void)
         LZ77UnCompVram(gBirchBagGrass_Gfx, gpu.gfxData);
         LZ77UnCompVram(gBirchBagTilemap, (void *)(BG_SCREEN_ADDR(14)));
         LZ77UnCompVram(gBirchGrassTilemap, (void *)(BG_SCREEN_ADDR(15)));
-        LZ77UnCompVram(sSaveFailedClockGfx, (void *)(OBJ_VRAM0 + 0x20));
         ResetBgsAndClearDma3BusyFlags(0);
         InitBgsFromTemplates(0, sBgTemplates, ARRAY_COUNT(sBgTemplates));
         SetBgTilemapBuffer(0, (void *)&gDecompressionBuffer[0x2000]);
@@ -226,6 +229,9 @@ static void CB2_SaveFailedScreen(void)
         CopyWindowToVram(sWindowIds[CLOCK_WIN_ID], COPYWIN_GFX); // again?
         CopyWindowToVram(sWindowIds[TEXT_WIN_ID], COPYWIN_MAP);
         SaveFailedScreenTextPrint(gText_SaveFailedCheckingBackup, 1, 0);
+        sSaveFailedClockGfxDecompressedSize = GetDecompressedDataSize(sSaveFailedClockGfx);
+        sSaveFailedClockGfxDecompressed = Alloc(sSaveFailedClockGfxDecompressedSize);
+        LZ77UnCompVram(sSaveFailedClockGfx, (void *)sSaveFailedClockGfxDecompressed);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
         EnableInterrupts(1);
         SetVBlankCallback(VBlankCB);
@@ -340,6 +346,8 @@ static void VBlankCB_UpdateClockGraphics(void)
     gMain.oamBuffer[0] = sClockOamData;
     gMain.oamBuffer[0].x = 112;
     gMain.oamBuffer[0].y = (CLOCK_WIN_TOP + 1) * 8;
+    gMain.oamBuffer[0].tileData = sSaveFailedClockGfxDecompressed;
+    gMain.oamBuffer[0].tileDataSize = sSaveFailedClockGfxDecompressedSize;
 
     if (sClockInfo[CLOCK_RUNNING])
     {

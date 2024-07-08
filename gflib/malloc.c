@@ -112,6 +112,43 @@ static void *AllocZeroedInternal(u32 size)
     return mem;
 }
 
+#ifdef MEMDEBUG
+static void *ReallocInternal(void *pointer, u32 size, const char *file, int line)
+#else
+static void *ReallocInternal(void *pointer, u32 size)
+#endif
+{
+    void *newmem = NULL;
+
+    if (!pointer)
+    {
+#ifdef MEMDEBUG
+        return AllocZeroedInternal(size, file, line);
+#else
+        return AllocZeroedInternal(size);
+#endif
+    }
+    else if (size)
+    {
+        struct MemBlock *block = (struct MemBlock *)((uintptr_t)pointer - sizeof(struct MemBlock));
+
+#ifdef MEMDEBUG
+        newmem = AllocZeroedInternal(size, file, line);
+#else
+        newmem = AllocZeroedInternal(size);
+#endif
+
+        if (size < block->block_size)
+            memcpy(newmem, pointer, size);
+        else
+            memcpy(newmem, pointer, block->block_size);
+    }
+
+    FreeInternal(pointer);
+
+    return newmem;
+}
+
 bool32 CheckMemBlockInternal(void *pointer)
 {
     struct MemBlock *block = (struct MemBlock *)((uintptr_t)pointer - sizeof(struct MemBlock));
@@ -160,6 +197,11 @@ void *MemAllocZeroed(u32 size, const char *file, int line)
 {
     return AllocZeroedInternal(size, file, line);
 }
+
+void *MemRealloc(void *pointer, u32 size, const char *file, int line)
+{
+    return ReallocInternal(pointer, size, file, line);
+}
 #else
 void *MemAlloc(u32 size)
 {
@@ -169,6 +211,11 @@ void *MemAlloc(u32 size)
 void *MemAllocZeroed(u32 size)
 {
     return AllocZeroedInternal(size);
+}
+
+void *MemRealloc(void *pointer, u32 size)
+{
+    return ReallocInternal(pointer, size);
 }
 #endif
 

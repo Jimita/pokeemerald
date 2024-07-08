@@ -239,7 +239,8 @@ struct Sprite
              bool16 usingSheet:1;          //0x40
              bool16 anchored:1;            //0x80
 
-    /*0x40*/ u16 sheetTileStart;
+    /*0x40*/ u8 *sheetTileStart;
+             u32 sheetDataSize;
 
     /*0x42*/ u8 subspriteTableNum:6;
              u8 subspriteMode:2;
@@ -263,7 +264,6 @@ extern const struct SpriteTemplate gDummySpriteTemplate;
 extern u8 gReservedSpritePaletteCount;
 extern struct Sprite gSprites[];
 extern u8 gOamLimit;
-extern u16 gReservedSpriteTileCount;
 extern s16 gSpriteCoordOffsetX;
 extern s16 gSpriteCoordOffsetY;
 extern struct OamMatrix gOamMatrices[];
@@ -302,16 +302,17 @@ u8 AllocOamMatrix(void);
 void FreeOamMatrix(u8 matrixNum);
 void InitSpriteAffineAnim(struct Sprite *sprite);
 void SetOamMatrixRotationScaling(u8 matrixNum, s16 xScale, s16 yScale, u16 rotation);
-u16 LoadSpriteSheet(const struct SpriteSheet *sheet);
+u8 *LoadSpriteSheet(const struct SpriteSheet *sheet);
 void LoadSpriteSheets(const struct SpriteSheet *sheets);
 u16 AllocTilesForSpriteSheet(struct SpriteSheet *sheet);
 void AllocTilesForSpriteSheets(struct SpriteSheet *sheets);
 void LoadTilesForSpriteSheet(const struct SpriteSheet *sheet);
 void LoadTilesForSpriteSheets(struct SpriteSheet *sheets);
 void FreeSpriteTilesByTag(u16 tag);
-void FreeSpriteTileRanges(void);
-u16 GetSpriteTileStartByTag(u16 tag);
-u16 GetSpriteTileTagByTileStart(u16 start);
+void FreeSpriteSheets(void);
+u8 *GetSpriteTileStartByTag(u16 tag);
+u16 GetSpriteTileTagByTileStart(u8 *start);
+s32 GetSizeOfSpriteSheetByTag(u16 tag);
 void RequestSpriteSheetCopy(const struct SpriteSheet *sheet);
 u16 LoadSpriteSheetDeferred(const struct SpriteSheet *sheet);
 void FreeAllSpritePalettes(void);
@@ -326,7 +327,6 @@ bool8 AddSpriteToOamBuffer(struct Sprite *object, u8 *oamIndex);
 bool8 AddSubspritesToOamBuffer(struct Sprite *sprite, struct OamData *destOam, u8 *oamIndex);
 void CopyToSprites(u8 *src);
 void CopyFromSprites(u8 *dest);
-u8 SpriteTileAllocBitmapOp(u16 bit, u8 op);
 void ResetAffineAnimData(void);
 
 #endif //GUARD_SPRITE_H

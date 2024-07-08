@@ -2,27 +2,10 @@
 #include "sprite.h"
 #include "main.h"
 #include "palette.h"
+#include "malloc.h"
 
 #define sAnchorX data[6]
 #define sAnchorY data[7]
-
-#define SET_SPRITE_TILE_RANGE(index, start, count) \
-{                                                  \
-    sSpriteTileRanges[index * 2] = start;          \
-    (sSpriteTileRanges + 1)[index * 2] = count;    \
-}
-
-#define ALLOC_SPRITE_TILE(n)                             \
-{                                                        \
-    sSpriteTileAllocBitmap[(n) / 8] |= (1 << ((n) % 8)); \
-}
-
-#define FREE_SPRITE_TILE(n)                               \
-{                                                         \
-    sSpriteTileAllocBitmap[(n) / 8] &= ~(1 << ((n) % 8)); \
-}
-
-#define SPRITE_TILE_IS_ALLOCATED(n) ((sSpriteTileAllocBitmap[(n) / 8] >> ((n) % 8)) & 1)
 
 struct OamDimensions32
 {
@@ -44,8 +27,7 @@ static void AddSpritesToOamBuffer(void);
 static u8 CreateSpriteAt(u8 index, const struct SpriteTemplate *template, s16 x, s16 y, u8 subpriority);
 static void ResetOamMatrices(void);
 static void ResetSprite(struct Sprite *sprite);
-static s16 AllocSpriteTiles(u16 tileCount);
-static void RequestSpriteFrameImageCopy(u16 index, u16 tileNum, const struct SpriteFrameImage *images);
+static void RequestSpriteFrameImageCopy(u16 index, struct Sprite *sprite, const struct SpriteFrameImage *images);
 static void ResetAllSprites(void);
 static void BeginAnim(struct Sprite *sprite);
 static void ContinueAnim(struct Sprite *sprite);
@@ -79,8 +61,7 @@ static void ApplyAffineAnimFrameRelativeAndUpdateMatrix(u8 matrixNum, struct Aff
 static s16 ConvertScaleParam(s16 scale);
 static void GetAffineAnimFrame(u8 matrixNum, struct Sprite *sprite, struct AffineAnimFrameCmd *frameCmd);
 static void ApplyAffineAnimFrame(u8 matrixNum, struct AffineAnimFrameCmd *frameCmd);
-static u8 IndexOfSpriteTileTag(u16 tag);
-static void AllocSpriteTileRange(u16 tag, u16 start, u16 count);
+static s32 IndexOfSpriteTileTag(u16 tag);
 static void DoLoadSpritePalette(const u16 *src, u16 paletteOffset);
 static void UpdateSpriteMatrixAnchorPos(struct Sprite *, s32, s32);
 
@@ -257,11 +238,18 @@ static const struct OamDimensions sOamDimensions[3][4] =
     },
 };
 
-// iwram bss
-static u16 sSpriteTileRangeTags[MAX_SPRITES];
-static u16 sSpriteTileRanges[MAX_SPRITES * 2];
 static struct AffineAnimState sAffineAnimStates[MAX_OAM_MATRICES];
 static u16 sSpritePaletteTags[16];
+
+struct LoadedSpriteSheet
+{
+    u16 tag;
+    u8 *data;
+    u32 size;
+};
+
+static struct LoadedSpriteSheet *sLoadedSpriteSheets;
+static u16 sNumLoadedSpriteSheets;
 
 // iwram common
 u32 gOamMatrixAllocBitmap;
@@ -271,22 +259,47 @@ EWRAM_DATA struct Sprite gSprites[MAX_SPRITES + 1] = {0};
 EWRAM_DATA static u16 sSpritePriorities[MAX_SPRITES] = {0};
 EWRAM_DATA static u8 sSpriteOrder[MAX_SPRITES] = {0};
 EWRAM_DATA u8 gOamLimit = 0;
-EWRAM_DATA u16 gReservedSpriteTileCount = 0;
-EWRAM_DATA static u8 sSpriteTileAllocBitmap[128] = {0};
 EWRAM_DATA s16 gSpriteCoordOffsetX = 0;
 EWRAM_DATA s16 gSpriteCoordOffsetY = 0;
 EWRAM_DATA struct OamMatrix gOamMatrices[MAX_OAM_MATRICES] = {0};
 EWRAM_DATA bool8 gAffineAnimsDisabled = FALSE;
+
+// NOTE: This uses standard malloc/realloc/free for now.
+static void *AllocSpriteData(u32 size)
+{
+#ifdef MEMDEBUG
+    printf("AllocSpriteData: %d bytes\n", size);
+#endif
+    return malloc(size);
+}
+
+static void *ReallocSpriteData(void *pointer, u32 size)
+{
+    if (!pointer)
+        return AllocSpriteData(size);
+
+#ifdef MEMDEBUG
+    printf("ReallocSpriteData: %p, %d bytes\n", pointer, size);
+#endif
+
+    return realloc(pointer, size);
+}
+
+static void FreeSpriteData(void *pointer)
+{
+#ifdef MEMDEBUG
+    printf("FreeSpriteData: %p\n", pointer);
+#endif
+    free(pointer);
+}
 
 void ResetSpriteData(void)
 {
     ResetOamRange(0, MAX_OAM_SPRITES);
     ResetAllSprites();
     ResetAffineAnimData();
-    FreeSpriteTileRanges();
-    gOamLimit = 64;
-    gReservedSpriteTileCount = 0;
-    AllocSpriteTiles(0);
+    FreeSpriteSheets();
+    gOamLimit = MAX_SPRITES;
     gSpriteCoordOffsetX = 0;
     gSpriteCoordOffsetY = 0;
 }
@@ -545,21 +558,23 @@ u8 CreateSpriteAt(u8 index, const struct SpriteTemplate *template, s16 x, s16 y,
 
     if (template->tileTag == TAG_NONE)
     {
-        s16 tileNum;
         sprite->images = template->images;
-        tileNum = AllocSpriteTiles((u8)(sprite->images->size / TILE_SIZE_4BPP));
-        if (tileNum == -1)
+        sprite->oam.tileDataSize = sprite->images->size;
+        sprite->oam.tileData = AllocSpriteData(sprite->images->size);
+        if (sprite->oam.tileData == NULL)
         {
             ResetSprite(sprite);
             return MAX_SPRITES;
         }
-        sprite->oam.tileNum = tileNum;
+        sprite->oam.tileNum = 0;
         sprite->usingSheet = FALSE;
-        sprite->sheetTileStart = 0;
+        sprite->sheetTileStart = NULL;
+        sprite->sheetDataSize = 0;
     }
     else
     {
         sprite->sheetTileStart = GetSpriteTileStartByTag(template->tileTag);
+        sprite->sheetDataSize = GetSizeOfSpriteSheetByTag(template->tileTag);
         SetSpriteSheetFrameTileNum(sprite);
     }
 
@@ -603,13 +618,6 @@ void DestroySprite(struct Sprite *sprite)
 {
     if (sprite->inUse)
     {
-        if (!sprite->usingSheet)
-        {
-            u16 i;
-            u16 tileEnd = (sprite->images->size / TILE_SIZE_4BPP) + sprite->oam.tileNum;
-            for (i = sprite->oam.tileNum; i < tileEnd; i++)
-                FREE_SPRITE_TILE(i);
-        }
         ResetSprite(sprite);
     }
 }
@@ -650,6 +658,12 @@ void SetOamMatrix(u8 matrixNum, u16 a, u16 b, u16 c, u16 d)
 
 void ResetSprite(struct Sprite *sprite)
 {
+    if (!sprite->usingSheet && sprite->oam.tileData != NULL)
+    {
+        FreeSpriteData(sprite->oam.tileData);
+        sprite->oam.tileData = NULL;
+    }
+
     *sprite = sDummySprite;
 }
 
@@ -668,85 +682,6 @@ void CalcCenterToCornerVec(struct Sprite *sprite, u8 shape, u8 size, u8 affineMo
     sprite->centerToCornerVecY = y;
 }
 
-s16 AllocSpriteTiles(u16 tileCount)
-{
-    u16 i;
-    s16 start;
-    u16 numTilesFound;
-
-    if (tileCount == 0)
-    {
-        // Free all unreserved tiles if the tile count is 0.
-        for (i = gReservedSpriteTileCount; i < TOTAL_OBJ_TILE_COUNT; i++)
-            FREE_SPRITE_TILE(i);
-
-        return 0;
-    }
-
-    i = gReservedSpriteTileCount;
-
-    for (;;)
-    {
-        while (SPRITE_TILE_IS_ALLOCATED(i))
-        {
-            i++;
-
-            if (i == TOTAL_OBJ_TILE_COUNT)
-                return -1;
-        }
-
-        start = i;
-        numTilesFound = 1;
-
-        while (numTilesFound != tileCount)
-        {
-            i++;
-
-            if (i == TOTAL_OBJ_TILE_COUNT)
-                return -1;
-
-            if (!SPRITE_TILE_IS_ALLOCATED(i))
-                numTilesFound++;
-            else
-                break;
-        }
-
-        if (numTilesFound == tileCount)
-            break;
-    }
-
-    for (i = start; i < tileCount + start; i++)
-        ALLOC_SPRITE_TILE(i);
-
-    return start;
-}
-
-u8 SpriteTileAllocBitmapOp(u16 bit, u8 op)
-{
-    u8 index = bit / 8;
-    u8 shift = bit % 8;
-    u8 val = bit % 8;
-    u8 retVal = 0;
-
-    if (op == 0)
-    {
-        val = ~(1 << val);
-        sSpriteTileAllocBitmap[index] &= val;
-    }
-    else if (op == 1)
-    {
-        val = (1 << val);
-        sSpriteTileAllocBitmap[index] |= val;
-    }
-    else
-    {
-        retVal = 1 << shift;
-        retVal &= sSpriteTileAllocBitmap[index];
-    }
-
-    return retVal;
-}
-
 void SpriteCallbackDummy(struct Sprite *sprite)
 {
 }
@@ -756,14 +691,20 @@ void ProcessSpriteCopyRequests(void)
     // TODO: Remove.
 }
 
-void RequestSpriteFrameImageCopy(u16 index, u16 tileNum, const struct SpriteFrameImage *images)
+void RequestSpriteFrameImageCopy(u16 index, struct Sprite *sprite, const struct SpriteFrameImage *images)
 {
-    CpuCopy16(images[index].data, (u8 *)OBJ_VRAM0 + TILE_SIZE_4BPP * tileNum, images[index].size);
+    struct OamData *oam = &sprite->oam;
+    u8 *dest = oam->tileData;
+    u32 offset = oam->tileNum * TILE_SIZE_4BPP;
+    if (dest != NULL && offset < oam->tileDataSize)
+    {
+        memcpy(&dest[offset], images[index].data, images[index].size);
+    }
 }
 
 void RequestSpriteCopy(const u8 *src, u8 *dest, u16 size)
 {
-    CpuCopy16(src, dest, size);
+    memcpy(dest, src, size);
 }
 
 void CopyFromSprites(u8 *dest)
@@ -879,9 +820,9 @@ void BeginAnim(struct Sprite *sprite)
             SetSpriteOamFlipBits(sprite, hFlip, vFlip);
 
         if (sprite->usingSheet)
-            sprite->oam.tileNum = sprite->sheetTileStart + imageValue;
+            sprite->oam.tileNum = imageValue;
         else
-            RequestSpriteFrameImageCopy(imageValue, sprite->oam.tileNum, sprite->images);
+            RequestSpriteFrameImageCopy(imageValue, sprite, sprite->images);
     }
 }
 
@@ -931,9 +872,9 @@ void AnimCmd_frame(struct Sprite *sprite)
         SetSpriteOamFlipBits(sprite, hFlip, vFlip);
 
     if (sprite->usingSheet)
-        sprite->oam.tileNum = sprite->sheetTileStart + imageValue;
+        sprite->oam.tileNum = imageValue;
     else
-        RequestSpriteFrameImageCopy(imageValue, sprite->oam.tileNum, sprite->images);
+        RequestSpriteFrameImageCopy(imageValue, sprite, sprite->images);
 }
 
 void AnimCmd_end(struct Sprite *sprite)
@@ -965,9 +906,9 @@ void AnimCmd_jump(struct Sprite *sprite)
         SetSpriteOamFlipBits(sprite, hFlip, vFlip);
 
     if (sprite->usingSheet)
-        sprite->oam.tileNum = sprite->sheetTileStart + imageValue;
+        sprite->oam.tileNum = imageValue;
     else
-        RequestSpriteFrameImageCopy(imageValue, sprite->oam.tileNum, sprite->images);
+        RequestSpriteFrameImageCopy(imageValue, sprite, sprite->images);
 }
 
 void AnimCmd_loop(struct Sprite *sprite)
@@ -1343,12 +1284,14 @@ void ChangeSpriteAffineAnimIfDifferent(struct Sprite *sprite, u8 animNum)
 
 void SetSpriteSheetFrameTileNum(struct Sprite *sprite)
 {
-    if (sprite->usingSheet)
+    if (sprite->usingSheet && sprite->sheetTileStart != NULL && sprite->template != NULL)
     {
         s16 tileOffset = sprite->anims[sprite->animNum][sprite->animCmdIndex].frame.imageValue;
         if (tileOffset < 0)
             tileOffset = 0;
-        sprite->oam.tileNum = sprite->sheetTileStart + tileOffset;
+        sprite->oam.tileData = sprite->sheetTileStart;
+        sprite->oam.tileDataSize = GetSizeOfSpriteSheetByTag(sprite->template->tileTag);
+        sprite->oam.tileNum = tileOffset;
     }
 }
 
@@ -1424,20 +1367,39 @@ void SetOamMatrixRotationScaling(u8 matrixNum, s16 xScale, s16 yScale, u16 rotat
     CopyOamMatrix(matrixNum, &matrix);
 }
 
-u16 LoadSpriteSheet(const struct SpriteSheet *sheet)
+u8 *LoadSpriteSheet(const struct SpriteSheet *sheet)
 {
-    s16 tileStart = AllocSpriteTiles(sheet->size / TILE_SIZE_4BPP);
+    struct LoadedSpriteSheet *loaded = NULL;
 
-    if (tileStart < 0)
+    u16 i;
+
+    for (i = 0; i < sNumLoadedSpriteSheets; i++)
     {
-        return 0;
+        if (sLoadedSpriteSheets[i].tag == sheet->tag
+        && sLoadedSpriteSheets[i].size == sheet->size)
+        {
+            return sLoadedSpriteSheets[i].data;
+        }
+        else if (sLoadedSpriteSheets[i].tag == TAG_NONE)
+        {
+            loaded = &sLoadedSpriteSheets[i];
+            break;
+        }
     }
-    else
+
+    if (loaded == NULL)
     {
-        AllocSpriteTileRange(sheet->tag, (u16)tileStart, sheet->size / TILE_SIZE_4BPP);
-        CpuCopy16(sheet->data, (u8 *)OBJ_VRAM0 + TILE_SIZE_4BPP * tileStart, sheet->size);
-        return (u16)tileStart;
+        sNumLoadedSpriteSheets++;
+        sLoadedSpriteSheets = ReallocSpriteData(sLoadedSpriteSheets, sizeof(struct LoadedSpriteSheet) * sNumLoadedSpriteSheets);
+        loaded = &sLoadedSpriteSheets[sNumLoadedSpriteSheets - 1];
     }
+
+    loaded->tag = sheet->tag;
+    loaded->size = sheet->size;
+    loaded->data = AllocSpriteData(sheet->size);
+    memcpy(loaded->data, sheet->data, sheet->size);
+
+    return loaded->data;
 }
 
 void LoadSpriteSheets(const struct SpriteSheet *sheets)
@@ -1449,74 +1411,78 @@ void LoadSpriteSheets(const struct SpriteSheet *sheets)
 
 void FreeSpriteTilesByTag(u16 tag)
 {
-    u8 index = IndexOfSpriteTileTag(tag);
-    if (index != 0xFF)
+    s32 index = IndexOfSpriteTileTag(tag);
+    if (index != -1)
+    {
+        FreeSpriteData(sLoadedSpriteSheets[index].data);
+        sLoadedSpriteSheets[index].tag = TAG_NONE;
+        sLoadedSpriteSheets[index].data = NULL;
+    }
+}
+
+void FreeSpriteSheets(void)
+{
+    if (!sNumLoadedSpriteSheets)
+        return;
+
+    u16 i;
+
+    for (i = 0; i < sNumLoadedSpriteSheets; i++)
+    {
+        FreeSpriteData(sLoadedSpriteSheets[i].data);
+    }
+
+    FreeSpriteData(sLoadedSpriteSheets);
+    sLoadedSpriteSheets = NULL;
+    sNumLoadedSpriteSheets = 0;
+}
+
+u8 *GetSpriteTileStartByTag(u16 tag)
+{
+    s32 index = IndexOfSpriteTileTag(tag);
+    if (index == -1)
+        return NULL;
+    return sLoadedSpriteSheets[index].data;
+}
+
+s32 IndexOfSpriteTileTag(u16 tag)
+{
+    if (tag != TAG_NONE)
     {
         u16 i;
-        u16 *rangeStarts;
-        u16 *rangeCounts;
-        u16 start;
-        u16 count;
-        rangeStarts = sSpriteTileRanges;
-        start = rangeStarts[index * 2];
-        rangeCounts = sSpriteTileRanges + 1;
-        count = rangeCounts[index * 2];
 
-        for (i = start; i < start + count; i++)
-            FREE_SPRITE_TILE(i);
-
-        sSpriteTileRangeTags[index] = TAG_NONE;
+        for (i = 0; i < sNumLoadedSpriteSheets; i++)
+            if (sLoadedSpriteSheets[i].tag == tag)
+                return (s32)i;
     }
+
+    return -1;
 }
 
-void FreeSpriteTileRanges(void)
+u16 GetSpriteTileTagByTileStart(u8 *start)
 {
-    u8 i;
+    u16 i;
 
-    for (i = 0; i < MAX_SPRITES; i++)
+    for (i = 0; i < sNumLoadedSpriteSheets; i++)
     {
-        sSpriteTileRangeTags[i] = TAG_NONE;
-        SET_SPRITE_TILE_RANGE(i, 0, 0);
-    }
-}
-
-u16 GetSpriteTileStartByTag(u16 tag)
-{
-    u8 index = IndexOfSpriteTileTag(tag);
-    if (index == 0xFF)
-        return 0xFFFF;
-    return sSpriteTileRanges[index * 2];
-}
-
-u8 IndexOfSpriteTileTag(u16 tag)
-{
-    u8 i;
-
-    for (i = 0; i < MAX_SPRITES; i++)
-        if (sSpriteTileRangeTags[i] == tag)
-            return i;
-
-    return 0xFF;
-}
-
-u16 GetSpriteTileTagByTileStart(u16 start)
-{
-    u8 i;
-
-    for (i = 0; i < MAX_SPRITES; i++)
-    {
-        if (sSpriteTileRangeTags[i] != TAG_NONE && sSpriteTileRanges[i * 2] == start)
-            return sSpriteTileRangeTags[i];
+        if (sLoadedSpriteSheets[i].data == start)
+            return sLoadedSpriteSheets[i].tag;
     }
 
     return TAG_NONE;
 }
 
-void AllocSpriteTileRange(u16 tag, u16 start, u16 count)
+s32 GetSizeOfSpriteSheetByTag(u16 tag)
 {
-    u8 freeIndex = IndexOfSpriteTileTag(TAG_NONE);
-    sSpriteTileRangeTags[freeIndex] = tag;
-    SET_SPRITE_TILE_RANGE(freeIndex, start, count);
+    u16 i;
+
+    for (i = 0; i < sNumLoadedSpriteSheets; i++)
+    {
+        if (sLoadedSpriteSheets[i].tag == tag)
+            return sLoadedSpriteSheets[i].size;
+    }
+
+    return 0;
 }
 
 void FreeAllSpritePalettes(void)

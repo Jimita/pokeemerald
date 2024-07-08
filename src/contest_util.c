@@ -1158,7 +1158,7 @@ static void LoadAllContestMonIconPalettes(void)
 
 static void TryCreateWirelessSprites(void)
 {
-    u16 sheet;
+    u8 *sheet;
     u8 spriteId;
 
     if (gLinkContestFlags & LINK_CONTEST_FLAG_IS_WIRELESS)
@@ -1167,7 +1167,7 @@ static void TryCreateWirelessSprites(void)
         CreateWirelessStatusIndicatorSprite(8, 8);
         gSprites[gWirelessStatusIndicatorSpriteId].subpriority = 1;
         sheet = LoadSpriteSheet(&sSpriteSheet_WirelessIndicatorWindow);
-        RequestDma3Fill(0xFFFFFFFF, (void *)BG_CHAR_ADDR(4) + sheet * 0x20, 0x80, 1);
+        RequestDma3Fill(0xFFFFFFFF, (void *)sheet, 0x80, 1);
         spriteId = CreateSprite(&sSpriteTemplate_WirelessIndicatorWindow, 8, 8, 0);
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_WINDOW;
     }
@@ -1202,10 +1202,13 @@ static s32 DrawResultsTextWindow(const u8 *text, u8 spriteId)
         src = (u8 *)sResultsTextWindow_Gfx;
 
         sprite = &gSprites[spriteId];
-        spriteTilePtrs[0] = (u8 *)(sprite->oam.tileNum * 32 + OBJ_VRAM0);
+        spriteTilePtrs[0] = &sprite->oam.tileData[sprite->oam.tileNum * TILE_SIZE_4BPP];
 
         for (i = 1; i < (int)ARRAY_COUNT(spriteTilePtrs); i++)
-            spriteTilePtrs[i] = (void *)(gSprites[sprite->data[i - 1]].oam.tileNum * 32 + OBJ_VRAM0);
+        {
+            u32 offset = gSprites[sprite->data[i - 1]].oam.tileNum * TILE_SIZE_4BPP;
+            spriteTilePtrs[i] = (void *)(&gSprites[sprite->data[i - 1]].oam.tileData[offset]);
+        }
 
         for (i = 0; i < (int)ARRAY_COUNT(spriteTilePtrs); i++)
             CpuFill32(0, spriteTilePtrs[i], 0x400);

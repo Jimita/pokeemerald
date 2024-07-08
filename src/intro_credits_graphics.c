@@ -851,7 +851,6 @@ void LoadCreditsSceneGraphics(u8 scene)
         LZ77UnCompVram(sCloudsBg_Tilemap, (void *)(BG_SCREEN_ADDR(6)));
         LoadPalette(&sCloudsBg_Pal, BG_PLTT_ID(0), sizeof(sCloudsBg_Pal));
         LoadCompressedSpriteSheet(sSpriteSheet_Clouds);
-        LZ77UnCompVram(sClouds_Gfx, (void *)(OBJ_VRAM0));
         LoadPalette(&sClouds_Pal, OBJ_PLTT_ID(0), sizeof(sClouds_Pal));
         CreateCloudSprites();
         break;
@@ -861,7 +860,6 @@ void LoadCreditsSceneGraphics(u8 scene)
         LZ77UnCompVram(sCloudsBg_Tilemap, (void *)(BG_SCREEN_ADDR(6)));
         LoadPalette(&sCloudsBgSunset_Pal, BG_PLTT_ID(0), sizeof(sCloudsBgSunset_Pal));
         LoadCompressedSpriteSheet(sSpriteSheet_Clouds);
-        LZ77UnCompVram(sClouds_Gfx, (void *)(OBJ_VRAM0));
         LoadPalette(&sCloudsSunset_Pal, OBJ_PLTT_ID(0), sizeof(sCloudsSunset_Pal));
         CreateCloudSprites();
         break;

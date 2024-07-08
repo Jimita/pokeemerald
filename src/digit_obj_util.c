@@ -18,6 +18,9 @@ struct DigitPrinter
     u8 xDelta;
     u8 tilesPerImage;
     u16 tileStart;
+    u8 *tileData;
+    u32 tileDataSize;
+    u16 tileNum;
     s16 x;
     s16 y;
     u16 tileTag;
@@ -127,12 +130,14 @@ bool32 DigitObjUtil_CreatePrinter(u32 id, s32 num, const struct DigitObjUtilTemp
     if (sOamWork->array[id].firstOamId == 0xFF)
         return FALSE;
 
-    sOamWork->array[id].tileStart = GetSpriteTileStartByTag(template->spriteSheet->tag);
-    if (sOamWork->array[id].tileStart == 0xFFFF)
+    sOamWork->array[id].tileNum = 0;
+    sOamWork->array[id].tileData = GetSpriteTileStartByTag(template->spriteSheet->tag);
+    if (sOamWork->array[id].tileData == NULL)
     {
         if (template->spriteSheet->size != 0)
         {
-            sOamWork->array[id].tileStart = LoadSpriteSheet(template->spriteSheet);
+            sOamWork->array[id].tileData = LoadSpriteSheet(template->spriteSheet);
+            sOamWork->array[id].tileDataSize = template->spriteSheet->size;
         }
         else
         {
@@ -140,11 +145,16 @@ bool32 DigitObjUtil_CreatePrinter(u32 id, s32 num, const struct DigitObjUtilTemp
 
             compSpriteSheet = *(struct CompressedSpriteSheet *)(template->spriteSheet);
             compSpriteSheet.size = GetDecompressedDataSize(template->spriteSheet->data);
-            sOamWork->array[id].tileStart = LoadCompressedSpriteSheet(&compSpriteSheet);
+            sOamWork->array[id].tileData = LoadCompressedSpriteSheet(&compSpriteSheet);
+            sOamWork->array[id].tileDataSize = compSpriteSheet.size;
         }
 
-        if (sOamWork->array[id].tileStart == 0xFFFF)
+        if (sOamWork->array[id].tileData == NULL)
             return FALSE;
+    }
+    else
+    {
+        sOamWork->array[id].tileDataSize = template->spriteSheet->size;
     }
 
     sOamWork->array[id].palTagIndex = IndexOfSpritePaletteTag(template->spritePal->tag);
@@ -189,6 +199,8 @@ static void CopyWorkToOam(struct DigitPrinter *objWork)
         gMain.oamBuffer[oamId].x = x;
         gMain.oamBuffer[oamId].shape = objWork->shape;
         gMain.oamBuffer[oamId].size = objWork->size;
+        gMain.oamBuffer[oamId].tileData = objWork->tileData;
+        gMain.oamBuffer[oamId].tileDataSize = objWork->tileDataSize;
         gMain.oamBuffer[oamId].tileNum = objWork->tileStart;
         gMain.oamBuffer[oamId].priority = objWork->priority;
         gMain.oamBuffer[oamId].paletteNum = objWork->palTagIndex;
@@ -199,7 +211,9 @@ static void CopyWorkToOam(struct DigitPrinter *objWork)
     oamId--;
     gMain.oamBuffer[oamId].x = objWork->x - objWork->xDelta;
     gMain.oamBuffer[oamId].affineMode = ST_OAM_AFFINE_ERASE;
-    gMain.oamBuffer[oamId].tileNum = objWork->tileStart + (objWork->tilesPerImage * 10);
+    gMain.oamBuffer[oamId].tileData = objWork->tileData;
+    gMain.oamBuffer[oamId].tileDataSize = objWork->tileDataSize;
+    gMain.oamBuffer[oamId].tileNum = objWork->tilesPerImage * 10;
 }
 
 void DigitObjUtil_PrintNumOn(u32 id, s32 num)

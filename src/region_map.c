@@ -1670,7 +1670,7 @@ void CB2_OpenFlyMap(void)
         {
             ResetPaletteFade();
             ResetSpriteData();
-            FreeSpriteTileRanges();
+            FreeSpriteSheets();
             FreeAllSpritePalettes();
             gMain.state++;
         }

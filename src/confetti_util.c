@@ -81,6 +81,8 @@ bool32 ConfettiUtil_Update(void)
                 sWork->array[i].oam.x = sWork->array[i].x + sWork->array[i].xDelta;
                 sWork->array[i].oam.priority = sWork->array[i].priority;
                 sWork->array[i].oam.tileNum = sWork->array[i].tileNum;
+                sWork->array[i].oam.tileData = GetSpriteTileStartByTag(sWork->array[i].tileTag);
+                sWork->array[i].oam.tileDataSize = GetSizeOfSpriteSheetByTag(sWork->array[i].tileTag);
                 memcpy(&gMain.oamBuffer[i + 64], &sWork->array[i], sizeof(struct OamData));
             }
         }
@@ -91,17 +93,11 @@ bool32 ConfettiUtil_Update(void)
 
 static bool32 SetAnimAndTileNum(struct ConfettiUtil *structPtr, u8 animNum)
 {
-    u16 tileStart;
-
     if (structPtr == NULL)
         return FALSE;
 
-    tileStart = GetSpriteTileStartByTag(structPtr->tileTag);
-    if (tileStart == 0xFFFF)
-        return FALSE;
-
     structPtr->animNum = animNum;
-    structPtr->tileNum = (GetTilesPerImage(structPtr->oam.shape, structPtr->oam.size) * animNum) + tileStart;
+    structPtr->tileNum = GetTilesPerImage(structPtr->oam.shape, structPtr->oam.size) * animNum;
     return TRUE;
 }
 

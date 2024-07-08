@@ -1303,9 +1303,7 @@ static void SpriteCB_HitAnimHealthoxEffect(struct Sprite *sprite)
 
 void LoadBallGfx(u8 ballId)
 {
-    u16 var;
-
-    if (GetSpriteTileStartByTag(gBallSpriteSheets[ballId].tag) == 0xFFFF)
+    if (GetSpriteTileStartByTag(gBallSpriteSheets[ballId].tag) == NULL)
     {
         LoadCompressedSpriteSheetUsingHeap(&gBallSpriteSheets[ballId]);
         LoadCompressedSpritePaletteUsingHeap(&gBallSpritePalettes[ballId]);
@@ -1318,8 +1316,7 @@ void LoadBallGfx(u8 ballId)
     case BALL_PREMIER:
         break;
     default:
-        var = GetSpriteTileStartByTag(gBallSpriteSheets[ballId].tag);
-        LZDecompressVram(gOpenPokeballGfx, (void *)(OBJ_VRAM0 + 0x100 + var * 32));
+        LZDecompressVram(gOpenPokeballGfx, GetSpriteTileStartByTag(gBallSpriteSheets[ballId].tag) + (8 * TILE_SIZE_4BPP));
         break;
     }
 }
