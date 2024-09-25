@@ -771,34 +771,50 @@ u32 FieldEffectScript_ReadWord(u8 **script)
          + ((*script)[3] << 24);
 }
 
+#ifdef VER_64BIT
+u64 FieldEffectScript_ReadPtr(u8 **script)
+{
+    return *(u64*)(*script);
+}
+#else
+u32 FieldEffectScript_ReadPtr(u8 **script)
+{
+    return (*script)[0]
+         + ((*script)[1] << 8)
+         + ((*script)[2] << 16)
+         + ((*script)[3] << 24)
+}
+#endif
+
+
 void FieldEffectScript_LoadTiles(u8 **script)
 {
-    struct SpriteSheet *sheet = (struct SpriteSheet *)FieldEffectScript_ReadWord(script);
+    struct SpriteSheet *sheet = (struct SpriteSheet *)FieldEffectScript_ReadPtr(script);
     if (GetSpriteTileStartByTag(sheet->tag) == 0xFFFF)
         LoadSpriteSheet(sheet);
-    (*script) += 4;
+    (*script) += 8;
 }
 
 void FieldEffectScript_LoadFadedPalette(u8 **script)
 {
-    struct SpritePalette *palette = (struct SpritePalette *)FieldEffectScript_ReadWord(script);
+    struct SpritePalette *palette = (struct SpritePalette *)FieldEffectScript_ReadPtr(script);
     LoadSpritePalette(palette);
     UpdateSpritePaletteWithWeather(IndexOfSpritePaletteTag(palette->tag));
-    (*script) += 4;
+    (*script) += 8;
 }
 
 void FieldEffectScript_LoadPalette(u8 **script)
 {
-    struct SpritePalette *palette = (struct SpritePalette *)FieldEffectScript_ReadWord(script);
+    struct SpritePalette *palette = (struct SpritePalette *)FieldEffectScript_ReadPtr(script);
     LoadSpritePalette(palette);
-    (*script) += 4;
+    (*script) += 8;
 }
 
 void FieldEffectScript_CallNative(u8 **script, u32 *val)
 {
-    u32 (*func)(void) = (u32 (*)(void))FieldEffectScript_ReadWord(script);
+    u32 (*func)(void) = (u32 (*)(void))FieldEffectScript_ReadPtr(script);
     *val = func();
-    (*script) += 4;
+    (*script) += 8;
 }
 
 void FieldEffectFreeGraphicsResources(struct Sprite *sprite)
@@ -2610,7 +2626,7 @@ static void FieldMoveShowMonOutdoorsEffect_Init(struct Task *task)
 {
     task->data[11] = GetGpuWindowIn();
     task->data[12] = GetGpuWindowOut();
-    task->intrCallbackPtr = gMain.vblankCallback;
+    task->funcPtr = gMain.vblankCallback;
     task->tWinHoriz = WIN_RANGE(DisplayWidth(), DisplayWidth() + 1);
     task->tWinVert = WIN_RANGE(DisplayHeight() / 2, DisplayHeight() / 2 + 1);
     task->tWinIn = WININ_WIN0_BG_ALL | WININ_WIN0_OBJ | WININ_WIN0_CLR;
@@ -2705,8 +2721,9 @@ static void FieldMoveShowMonOutdoorsEffect_RestoreBg(struct Task *task)
 
 static void FieldMoveShowMonOutdoorsEffect_End(struct Task *task)
 {
-    if (task->intrCallbackPtr)
-        SetVBlankCallback(task->intrCallbackPtr);
+    IntrCallback callback;
+    callback = task->funcPtr;
+    SetVBlankCallback(callback);
     InitTextBoxGfxAndPrinters();
     FreeResourcesAndDestroySprite(&gSprites[task->tMonSpriteId], task->tMonSpriteId);
     FieldEffectActiveListRemove(FLDEFF_FIELD_MOVE_SHOW_MON);
@@ -2716,9 +2733,9 @@ static void FieldMoveShowMonOutdoorsEffect_End(struct Task *task)
 static void VBlankCB_FieldMoveShowMonOutdoors(void)
 {
     struct Task *task = &gTasks[FindTaskIdByFunc(Task_FieldMoveShowMonOutdoors)];
-    if (task->intrCallbackPtr)
-        task->intrCallbackPtr();
-
+    IntrCallback callback;
+    callback = task->funcPtr;
+    callback();
     SetGpuWindowX(0, task->tWinHoriz);
     SetGpuWindowY(0, task->tWinVert);
     SetGpuWindowIn(task->tWinIn);
@@ -2774,7 +2791,7 @@ static void FieldMoveShowMonIndoorsEffect_Init(struct Task *task)
 {
     SetGpuBackgroundX(0, task->tBgHoriz);
     SetGpuBackgroundY(0, task->tBgVert);
-    task->intrCallbackPtr = gMain.vblankCallback;
+    task->funcPtr = gMain.vblankCallback;
     SetVBlankCallback(VBlankCB_FieldMoveShowMonIndoors);
     task->tState++;
 }
@@ -2826,9 +2843,10 @@ static void FieldMoveShowMonIndoorsEffect_SlideBannerOff(struct Task *task)
 
 static void FieldMoveShowMonIndoorsEffect_End(struct Task *task)
 {
+    IntrCallback intrCallback;
     GpuClearTilemap(0);
-    if (task->intrCallbackPtr)
-        SetVBlankCallback(task->intrCallbackPtr);
+    intrCallback = task->funcPtr;
+    SetVBlankCallback(intrCallback);
     InitTextBoxGfxAndPrinters();
     FreeResourcesAndDestroySprite(&gSprites[task->tMonSpriteId], task->tMonSpriteId);
     FieldEffectActiveListRemove(FLDEFF_FIELD_MOVE_SHOW_MON);
@@ -2837,9 +2855,11 @@ static void FieldMoveShowMonIndoorsEffect_End(struct Task *task)
 
 static void VBlankCB_FieldMoveShowMonIndoors(void)
 {
-    struct Task *task = &gTasks[FindTaskIdByFunc(Task_FieldMoveShowMonIndoors)];
-    if (task->intrCallbackPtr)
-        task->intrCallbackPtr();
+    IntrCallback intrCallback;
+    struct Task *task;
+    task = &gTasks[FindTaskIdByFunc(Task_FieldMoveShowMonIndoors)];
+    intrCallback = task->funcPtr;
+    intrCallback();
     SetGpuBackgroundX(0, task->tBgHoriz);
     SetGpuBackgroundY(0, task->tBgVert);
 }

@@ -1896,7 +1896,9 @@ static void ResetHPTaskData(u8 taskId, u8 caseId, u32 hp)
             tPartyId = hp;
             break;
         case 5:
+            #ifndef VER_64BIT //its unused anyways, not gonna worry about the 32 bit pointer cast
             SetTaskFuncWithFollowupFunc(taskId, Task_PartyMenuModifyHP, (TaskFunc)hp); // >casting hp as a taskfunc
+            #endif
             break;
     }
 }

@@ -684,11 +684,12 @@ static u16 GetMetatileForFloor(u8 floorId, u32 x, u32 y, u32 floorWidth) // floo
     return ((impassable << MAPGRID_COLLISION_SHIFT) & MAPGRID_COLLISION_MASK) | elevation | (metatile & MAPGRID_METATILE_ID_MASK);
 }
 
-void GenerateTrainerHillFloorLayout(u16 *mapArg)
+// TODO: Check if this still works.
+void GenerateTrainerHillFloorLayout(u32 *mapArg)
 {
     s32 y, x;
     const u16 *src;
-    u16 *dst;
+    u32 *dst;
     u8 mapId = GetCurrentTrainerHillMapId();
 
     if (mapId == TRAINER_HILL_ENTRANCE)

@@ -665,7 +665,7 @@ static u32 LoopedTask_ReshowListFromCheckPage(s32 state)
 
 static void EraseListEntry(struct PokenavListMenuWindow *listWindow, s32 offset, s32 entries)
 {
-    u8 *tileData = (u8 *)GetWindowTileDataPtr(listWindow->windowId);
+    u8 *tileData = GetWindowTileDataPtr(listWindow->windowId);
     u32 width = listWindow->width * 64;
 
     offset = (listWindow->unkA + offset) & 0xF;

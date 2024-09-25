@@ -1341,7 +1341,7 @@ void DrawTextWindowAndBufferTiles(const u8 *string, void *dst, u8 zero1, u8 zero
     winTemplate.height = 2;
     windowId = AddWindow(&winTemplate);
     FillWindowPixelBuffer(windowId, PIXEL_FILL(zero2));
-    tileData1 = (u8 *) GetWindowTileDataPtr(windowId);
+    tileData1 = GetWindowTileDataPtr(windowId);
     tileData2 = (winTemplate.width * TILE_SIZE_4BPP) + tileData1;
 
     if (!zero1)
@@ -1388,7 +1388,7 @@ static void UNUSED UnusedDrawTextWindow(const u8 *string, void *dst, u16 offset,
     tilesSize = winTemplate.width * TILE_SIZE_4BPP;
     windowId = AddWindow(&winTemplate);
     FillWindowPixelBuffer(windowId, PIXEL_FILL(bgColor));
-    tileData1 = (u8 *) GetWindowTileDataPtr(windowId);
+    tileData1 = GetWindowTileDataPtr(windowId);
     tileData2 = (winTemplate.width * TILE_SIZE_4BPP) + tileData1;
     txtColor[0] = bgColor;
     txtColor[1] = fgColor;
@@ -1929,7 +1929,7 @@ static void ChooseBoxMenu_PrintInfo(void)
     u8 windowId;
     u8 *boxName = GetBoxNamePtr(sChooseBoxMenu->curBox);
     u8 numInBox = CountMonsInBox(sChooseBoxMenu->curBox);
-    void *winTileData;
+    u8* winTileData;
     s32 center;
 
     memset(&template, 0, sizeof(template));
@@ -1949,8 +1949,8 @@ static void ChooseBoxMenu_PrintInfo(void)
     center = GetStringCenterAlignXOffset(FONT_NORMAL, numBoxMonsText, 64);
     AddTextPrinterParameterized3(windowId, FONT_NORMAL, center, 17, sChooseBoxMenu_TextColors, TEXT_SKIP_DRAW, numBoxMonsText);
 
-    winTileData = (void *)GetWindowTileDataPtr(windowId);
-    CpuCopy32(winTileData, (void *)OBJ_VRAM0 + 0x100 + (GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) * 32), 0x400);
+    winTileData = GetWindowTileDataPtr(windowId);
+    CpuCopy32((void *)winTileData, (void *)OBJ_VRAM0 + 0x100 + (GetSpriteTileStartByTag(sChooseBoxMenu->tileTag) * 32), 0x400);
 
     RemoveWindow(windowId);
 }

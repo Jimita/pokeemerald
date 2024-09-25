@@ -115,6 +115,7 @@ u8 ReadFlash1(u8 *addr)
 
 void SetReadFlash1(u16 *dest)
 {
+    #ifndef PORTABLE
     u16 *src;
     u16 i;
 
@@ -130,6 +131,7 @@ void SetReadFlash1(u16 *dest)
         *dest++ = *src++;
         i--;
     }
+    #endif
 }
 
 // Using volatile here to make sure the flash memory will ONLY be read as bytes, to prevent any compiler optimizations.

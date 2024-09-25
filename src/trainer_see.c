@@ -620,14 +620,14 @@ static bool8 WaitRevealBuriedTrainer(u8 taskId, struct Task *task, struct Object
 #undef tOutOfAshSpriteId
 #undef tTrainerObjectEventId
 
-#define tObjEvent data[1]
+#define tObjEvent genericPtr[0]
 
 static void Task_SetBuriedTrainerMovement(u8 taskId)
 {
     struct Task *task = &gTasks[taskId];
     struct ObjectEvent *objEvent;
 
-    LoadWordFromTwoHalfwords((u16*) &task->tObjEvent, (u32 *)&objEvent);
+    objEvent = (struct ObjectEvent*)task->tObjEvent;
     if (!task->data[7])
     {
         ObjectEventClearHeldMovement(objEvent);
@@ -649,7 +649,7 @@ static void Task_SetBuriedTrainerMovement(u8 taskId)
 // Called when a buried Trainer has the reveal_trainer movement applied, from direct interaction
 void SetBuriedTrainerMovement(struct ObjectEvent *objEvent)
 {
-    StoreWordInTwoHalfwords((u16*) &gTasks[CreateTask(Task_SetBuriedTrainerMovement, 0)].tObjEvent, (u32)objEvent);
+    gTasks[CreateTask(Task_SetBuriedTrainerMovement, 0)].tObjEvent = (void*)objEvent;
 }
 
 void DoTrainerApproach(void)

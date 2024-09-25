@@ -906,6 +906,7 @@ void ListMenuDefaultCursorMoveFunc(s32 itemIndex, bool8 onInit, struct ListMenu 
 }
 
 // unused
+#ifndef VER_64BIT
 s32 ListMenuGetUnkIndicatorsStructFields(u8 taskId, u8 field)
 {
     struct UnkIndicatorsStruct *data = (void *) gTasks[taskId].data;
@@ -949,6 +950,7 @@ s32 ListMenuGetUnkIndicatorsStructFields(u8 taskId, u8 field)
         return -1;
     }
 }
+#endif
 
 void ListMenuSetUnkIndicatorsStructField(u8 taskId, u8 field, s32 value)
 {
@@ -958,7 +960,11 @@ void ListMenuSetUnkIndicatorsStructField(u8 taskId, u8 field, s32 value)
     {
     case 0:
     case 1:
+        #ifndef VER_64BIT
         data->field_4 = (void *)(value);
+        #else
+        printf("ListMenuSetUnkIndicatorsStructField: case 1 stubbed out.");
+        #endif
         break;
     case 2:
         data->field_C = value;

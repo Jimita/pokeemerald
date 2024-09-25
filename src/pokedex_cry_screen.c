@@ -236,7 +236,7 @@ bool8 LoadCryWaveformWindow(struct CryScreenWindow *window, u8 windowId)
         if (!sDexCryScreen)
         {
             sDexCryScreen = AllocZeroed(sizeof(*sDexCryScreen));
-            sCryWaveformWindowTiledata = (u8 *)GetWindowTileDataPtr(windowId);
+            sCryWaveformWindowTiledata = GetWindowTileDataPtr(windowId);
         }
 
         sDexCryScreen->unk = window->unk0;

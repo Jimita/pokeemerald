@@ -18,6 +18,7 @@ struct Task
     u8 next;
     u8 priority;
     s16 data[NUM_TASK_DATA];
+    TaskFunc followupFunc;
     union {
         void *genericPtr[2];
         uintptr_t intPtr[2];
@@ -25,7 +26,6 @@ struct Task
         TaskFunc funcPtr_task;
         struct Sprite *spritePtr;
         struct Pokemon *monPtr;
-        void (*intrCallbackPtr)(void); // should be IntrCallback
     };
 };
 

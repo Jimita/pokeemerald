@@ -5089,7 +5089,7 @@ static void AnimTask_MoonlightEndFade_Step(u8 taskId)
     case 2:
         if (++task->data[1] > 30)
         {
-            BeginNormalPaletteFade((u32)LoadPointerFromVars(task->intPtr[0]), 0, 16, 0, RGB(27, 29, 31));
+            BeginNormalPaletteFade((uintptr_t)LoadPointerFromVars(task->intPtr[0]), 0, 16, 0, RGB(27, 29, 31));
             task->data[0]++;
         }
         break;

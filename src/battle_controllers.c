@@ -1257,6 +1257,7 @@ void BtlController_EmitDataTransfer(u8 bufferId, u16 size, void *data)
     PrepareBufferDataTransfer(bufferId, sBattleBuffersTransferData, size + 4);
 }
 
+#ifndef VER_64BIT
 static void UNUSED BtlController_EmitDMA3Transfer(u8 bufferId, void *dst, u16 size, void *data)
 {
     s32 i;
@@ -1272,6 +1273,7 @@ static void UNUSED BtlController_EmitDMA3Transfer(u8 bufferId, void *dst, u16 si
         sBattleBuffersTransferData[7 + i] = *(u8 *)(data++);
     PrepareBufferDataTransfer(bufferId, sBattleBuffersTransferData, size + 7);
 }
+#endif
 
 static void UNUSED BtlController_EmitPlayBGM(u8 bufferId, u16 songId, void *data)
 {

@@ -44,7 +44,7 @@ static void FillWestConnection(struct MapHeader const *mapHeader, struct MapHead
 static void FillEastConnection(struct MapHeader const *mapHeader, struct MapHeader const *connectedMapHeader, s32 offset, u32 connId);
 static void InitBackupMapLayoutConnections(struct MapHeader *mapHeader);
 static void LoadSavedMapView(void);
-static bool8 SkipCopyingMetatileFromSavedMap(u16 *mapBlock, u16 mapWidth, u8 yMode);
+static bool8 SkipCopyingMetatileFromSavedMap(u32 *mapBlock, u16 mapWidth, u8 yMode);
 static const struct MapConnection *GetIncomingConnection(u8 direction, int x, int y);
 static bool8 IsPosInIncomingConnectingMap(u8 direction, int x, int y, const struct MapConnection *connection);
 static bool8 IsCoordInIncomingConnectingMap(int coord, int srcMax, int destMax, int offset);
@@ -197,10 +197,10 @@ static void LoadConnectionSecondaryTilesets(struct MapHeader *mapHeader)
             u32 offset = connection->offset;
             
             if  ( (cMap->mapLayout) &&
-                connection->direction == CONNECTION_SOUTH ||
+                (connection->direction == CONNECTION_SOUTH ||
                 connection->direction == CONNECTION_NORTH ||
                 connection->direction == CONNECTION_WEST ||
-                connection->direction == CONNECTION_EAST
+                connection->direction == CONNECTION_EAST)
                 )
             {
                 CopyTilesetToVramUsingHeap(cMap->mapLayout->secondaryTileset, NUM_TILES_TOTAL - NUM_TILES_IN_PRIMARY, NUM_TILES_TOTAL + (i*NUM_TILES_IN_PRIMARY));
@@ -225,10 +225,10 @@ static void LoadConnectionSecondaryTilesetsPalettes(struct MapHeader *mapHeader)
             u32 offset = connection->offset;
             
             if  ( (cMap->mapLayout) &&
-                connection->direction == CONNECTION_SOUTH ||
+                (connection->direction == CONNECTION_SOUTH ||
                 connection->direction == CONNECTION_NORTH ||
                 connection->direction == CONNECTION_WEST ||
-                connection->direction == CONNECTION_EAST
+                connection->direction == CONNECTION_EAST)
                 )
             {
                 //i+2 so the first connection palette would load after the main map palette
@@ -593,13 +593,15 @@ static void LoadSavedMapView(void)
     }
 }
 
+// TODO: Check if this still works.
 static void MoveMapViewToBackup(u8 direction)
 {
     int width;
     u16 *mapView;
     int x0, y0;
     int x2, y2;
-    u16 *src, *dest;
+    u16 *src;
+    u32 *dest;
     int srci, desti;
     int r9, r8;
     int x, y;
@@ -910,7 +912,8 @@ void MapGridSetMetatileImpassabilityAt(int x, int y, bool32 impassable)
     }
 }
 
-static bool8 SkipCopyingMetatileFromSavedMap(u16 *mapBlock, u16 mapWidth, u8 yMode)
+// TODO: Check if this still works.
+static bool8 SkipCopyingMetatileFromSavedMap(u32 *mapBlock, u16 mapWidth, u8 yMode)
 {
     if (yMode == 0xFF)
         return FALSE;

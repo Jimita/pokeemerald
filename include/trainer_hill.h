@@ -55,7 +55,7 @@ bool8 InTrainerHillChallenge(void);
 void PrintOnTrainerHillRecordsWindow(void);
 void LoadTrainerHillObjectEventTemplates(void);
 bool32 LoadTrainerHillFloorObjectEventScripts(void);
-void GenerateTrainerHillFloorLayout(u16 *mapArg);
+void GenerateTrainerHillFloorLayout(u32 *mapArg);
 bool32 InTrainerHill(void);
 u8 GetCurrentTrainerHillMapId(void);
 const struct WarpEvent* SetWarpDestinationTrainerHill4F(void);

@@ -216,7 +216,7 @@ u32 CreateLoopedTask(LoopedTask loopedTask, u32 priority)
     else
         taskId = CreateTask(Task_RunLoopedTask_LinkMode, priority);
 
-    SetWordTaskArg(taskId, 1, (u32)loopedTask);
+    SetWordTaskArg(taskId, 1, (uintptr_t)loopedTask);
 
     gTasks[taskId].data[3] = gNextLoopedTaskId;
     return LOOPED_TASK_ID(taskId, gNextLoopedTaskId++);

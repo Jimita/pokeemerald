@@ -1199,7 +1199,7 @@ static s32 DrawResultsTextWindow(const u8 *text, u8 spriteId)
         s32 i;
         struct Sprite *sprite;
         const u8 *src, *windowTilesPtr;
-        windowTilesPtr = (u8 *)GetWindowTileDataPtr(windowId);
+        windowTilesPtr = GetWindowTileDataPtr(windowId);
         src = (u8 *)sResultsTextWindow_Gfx;
 
         sprite = &gSprites[spriteId];

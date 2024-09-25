@@ -1234,7 +1234,7 @@ static u8 GetPostBattleDirectionHintTextIndex(int *hintType, u8 minDistanceForEx
 {
     int x, y;
     u8 textIndex = 0;
-    u16 *map = gBackupMapLayout.map;
+    u32 *map = gBackupMapLayout.map;
     map += gBackupMapLayout.width * 7 + MAP_OFFSET;
 
     for (y = 0; y < 32; map += 47, y++)
@@ -1519,7 +1519,8 @@ static u16 GetUniqueTrainerId(u8 objectEventId)
     return trainerId;
 }
 
-void GenerateBattlePyramidFloorLayout(u16 *backupMapData, bool8 setPlayerPosition)
+// TODO: Check if this works.
+void GenerateBattlePyramidFloorLayout(u32 *backupMapData, bool8 setPlayerPosition)
 {
     int y, x;
     int i;
@@ -1530,7 +1531,7 @@ void GenerateBattlePyramidFloorLayout(u16 *backupMapData, bool8 setPlayerPositio
     GetPyramidEntranceAndExitSquareIds(&entranceSquareId, &exitSquareId);
     for (i = 0; i < NUM_PYRAMID_FLOOR_SQUARES; i++)
     {
-        u16 *map;
+        u32 *map;
         int yOffset, xOffset;
         const struct MapLayout *mapLayout = gMapLayouts[floorLayoutOffsets[i] + LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_FLOOR];
         const u16 *layoutMap = mapLayout->map;

@@ -555,9 +555,9 @@ bool8 SetWindowAttribute(u8 windowId, u8 attributeId, u32 value)
     }
 }
 
-bool8 SetWindowTileDataPtr(u8 windowId, void *ptr)
+bool8 SetWindowTileDataPtr(u8 windowId, u8* tileData)
 {
-    gWindows[windowId].tileData = (u8 *)(ptr);
+    gWindows[windowId].tileData = tileData;
     return TRUE;
 }
 

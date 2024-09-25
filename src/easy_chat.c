@@ -1304,8 +1304,8 @@ void DoEasyChatScreen(u8 type, u16 *words, MainCallback exitCallback, u8 display
     taskId = CreateTask(Task_InitEasyChatScreen, 0);
     gTasks[taskId].tType = type;
     gTasks[taskId].tPersonType = displayedPersonType;
-    SetWordTaskArg(taskId, TASKIDX_WORDS, (u32)words);
-    SetWordTaskArg(taskId, TASKIDX_EXIT_CALLBACK, (u32)exitCallback);
+    SetWordTaskArg(taskId, TASKIDX_WORDS, (uintptr_t)words);
+    SetWordTaskArg(taskId, TASKIDX_EXIT_CALLBACK, (uintptr_t)exitCallback);
     SetMainCallback2(CB2_EasyChatScreen);
 }
 

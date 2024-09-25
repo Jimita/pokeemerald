@@ -846,6 +846,113 @@ static void CPUWriteByte(void *dest, uint8_t val)
     *(uint8_t *)dest = val;
 }
 
+void CpuSet(const void *src, void *dst, u32 cnt)
+{
+    if(dst == NULL)
+    {
+        puts("Attempted to CpuSet to NULL\n");
+        return;
+    }
+    
+    int count = cnt & 0x1FFFFF;
+
+    const u8 *source = src;
+    u8 *dest = dst;
+
+    // 32-bit ?
+    if ((cnt >> 26) & 1) {
+        
+        //assert(((uintptr_t)src & ~3) == (uintptr_t)src);
+        //assert(((uintptr_t)dst & ~3) == (uintptr_t)dst);
+        
+        // needed for 32-bit mode!
+        //source = (u8 *)((uint32_t )source & ~3);
+        //dest = (u8 *)((uint32_t )dest & ~3);
+
+        // fill ?
+        if ((cnt >> 24) & 1) {
+            uint32_t value = CPUReadMemory(source);
+            while (count) {
+                CPUWriteMemory(dest, value);
+                dest += 4;
+                count--;
+            }
+        } else {
+            // copy
+            while (count) {
+                CPUWriteMemory(dest, CPUReadMemory(source));
+                source += 4;
+                dest += 4;
+                count--;
+            }
+        }
+    } else {
+        // No align on 16-bit fill?
+        //assert(((uintptr_t)src & ~1) == (uintptr_t)src);
+        //assert(((uintptr_t)dst & ~1) == (uintptr_t)dst);
+
+        // 16-bit fill?
+        if ((cnt >> 24) & 1) {
+            uint16_t value = CPUReadHalfWord(source);
+            while (count) {
+                CPUWriteHalfWord(dest, value);
+                dest += 2;
+                count--;
+            }
+        } else {
+            // copy
+            while (count) {
+                CPUWriteHalfWord(dest, CPUReadHalfWord(source));
+                source += 2;
+                dest += 2;
+                count--;
+            }
+        }
+    }
+}
+
+void CpuFastSet(const void *src, void *dst, u32 cnt)
+{
+    if(dst == NULL)
+    {
+        puts("Attempted to CpuFastSet to NULL\n");
+        return;
+    }
+    
+    int count = cnt & 0x1FFFFF;
+
+    const u8 *source = src;
+    u8 *dest = dst;
+    
+    //source = (u8 *)((uint32_t )source & ~3);
+    //dest = (u8 *)((uint32_t )dest & ~3);
+
+    // fill?
+    if((cnt >> 24) & 1) {
+        uint32_t value = CPUReadMemory(source);
+        while(count > 0) {
+            // BIOS always transfers 32 bytes at a time
+            for(int i = 0; i < 8; i++) {
+                CPUWriteMemory(dest, value);
+                dest += 4;
+            }
+            count -= 8;
+        }
+    } else {
+        // copy
+        while(count > 0) {
+            // BIOS always transfers 32 bytes at a time
+            for(int i = 0; i < 8; i++) {
+                uint32_t value = CPUReadMemory(source);
+                CPUWriteMemory(dest, value);
+                source += 4;
+                dest += 4;
+            }
+            count -= 8;
+        }
+    }
+}
+
 void LZ77UnCompVram(const u32 *src_, void *dest_)
 {
     const u8 *src = (const u8 *)src_;
@@ -988,6 +1095,7 @@ void RLUnCompWram(const void *src, void *dest)
     }
 }
 
+//todo get rid of these ugly 64 bit ifdefs
 void RLUnCompVram(const void *src, void *dest)
 {
     int remaining = CPUReadMemory(src) >> 8;
@@ -1010,10 +1118,18 @@ void RLUnCompVram(const void *src, void *dest)
             while (blockHeader-- && remaining)
             {
                 remaining--;
-                if ((u32)dest_u32 & 1)
+				#ifdef VER_64BIT
+                if ((u64)dest_u32 & 1)
+				#else
+				if ((u32)dest_u32 & 1)
+				#endif
                 {
                     halfWord |= block << 8;
-                    CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
+					#ifdef VER_64BIT
+                    CPUWriteHalfWord((void *)((u64)dest_u32 ^ 1), halfWord);
+					#else
+					CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
+					#endif
                 }
                 else
                     halfWord = block;
@@ -1028,10 +1144,18 @@ void RLUnCompVram(const void *src, void *dest)
                 remaining--;
                 u8 byte = CPUReadByte(src);
                 src++;
-                if ((u32)dest_u32 & 1)
+				#ifdef VER_64BIT
+                if ((u64)dest_u32 & 1)
+				#else
+				if ((u32)dest_u32 & 1)
+				#endif
                 {
                     halfWord |= byte << 8;
-                    CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
+					#ifdef VER_64BIT
+                    CPUWriteHalfWord((void *)((u64)dest_u32 ^ 1), halfWord);
+					#else
+					CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), halfWord);
+					#endif
                 }
                 else
                     halfWord = byte;
@@ -1039,13 +1163,17 @@ void RLUnCompVram(const void *src, void *dest)
             }
         }
     }
-    if ((u32)dest_u32 & 1)
+	#ifdef VER_64BIT
+    if ((u64)dest_u32 & 1)
+	#else
+	if ((u32)dest_u32 & 1)
+	#endif
     {
         padding--;
         dest_u32++;
     }
     for (; padding > 0; padding -= 2, dest_u32 += 2)
-        CPUWriteHalfWord((void *)((u32)dest_u32 ^ 1), 0);
+        CPUWriteHalfWord(dest_u32, 0);
 }
 
 const s16 sineTable[256] = {

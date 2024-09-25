@@ -1245,9 +1245,6 @@ static void HallOfFame_PrintPlayerInfo(u8 unused1, u8 unused2)
 
 static void ClearVramOamPltt_LoadHofPal(void)
 {
-    u32 oamOffset, plttOffset;
-    u32 oamSize, plttSize;
-
     GpuClearAll();
 
     ResetPaletteFade();
