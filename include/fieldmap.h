@@ -7,6 +7,7 @@
 #define NUM_METATILES_TOTAL 1024
 #define NUM_PALS_IN_PRIMARY 6
 #define NUM_PALS_TOTAL 13
+#define NUM_PALS_IN_SECONDARY (NUM_PALS_TOTAL-NUM_PALS_IN_PRIMARY)
 #define MAX_MAP_DATA_SIZE 40960
 
 #define NUM_TILES_PER_METATILE 8
@@ -25,6 +26,7 @@
 extern struct BackupMapLayout gBackupMapLayout;
 
 u32 MapGridGetMetatileIdAt(int, int);
+u8 MapGridGetConnectionId(int, int);
 u32 MapGridGetMetatileBehaviorAt(int, int);
 void MapGridSetMetatileIdAt(int, int, u16);
 void MapGridSetMetatileEntryAt(int, int, u16);

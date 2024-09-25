@@ -7,6 +7,7 @@
 #define gPaletteFade_submode          (gPaletteFade.multipurpose2) // fast fade
 
 #define PLTT_BUFFER_SIZE (PLTT_SIZE / sizeof(u16))
+#define PLTT_NUM_OF_PALS_IN_BG (BG_PLTT_SIZE/32)
 
 #define PALETTE_FADE_STATUS_DELAY 2
 #define PALETTE_FADE_STATUS_ACTIVE 1
@@ -19,7 +20,7 @@
 
 #define PLTT_ID(n) ((n) * 16)
 #define BG_PLTT_OFFSET 0x000
-#define OBJ_PLTT_OFFSET 0x100
+#define OBJ_PLTT_OFFSET (BG_PLTT_SIZE / sizeof(u16))
 #define BG_PLTT_ID(n) (BG_PLTT_OFFSET + PLTT_ID(n))
 #define OBJ_PLTT_ID(n) (OBJ_PLTT_OFFSET + PLTT_ID(n))
 #define OBJ_PLTT_ID2(n) (PLTT_ID((n) + 16))
@@ -58,9 +59,9 @@ extern u8 ALIGNED(4) gPaletteDecompressionBuffer[];
 extern u16 ALIGNED(4) gPlttBufferUnfaded[PLTT_BUFFER_SIZE];
 extern u16 ALIGNED(4) gPlttBufferFaded[PLTT_BUFFER_SIZE];
 
-void LoadCompressedPalette(const u32 *src, u16 offset, u16 size);
-void LoadPalette(const void *src, u16 offset, u16 size);
-void FillPalette(u16 value, u16 offset, u16 size);
+void LoadCompressedPalette(const u32 *src, u32 offset, u32 size);
+void LoadPalette(const void *src, u32 offset, u32 size);
+void FillPalette(u16 value, u32 offset, u32 size);
 void TransferPlttBuffer(void);
 u8 UpdatePaletteFade(void);
 void ResetPaletteFade(void);

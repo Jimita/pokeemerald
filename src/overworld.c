@@ -182,9 +182,9 @@ static bool8 sReceivingFromLink;
 static u8 sRfuKeepAliveTimer;
 
 u16 gOverworldTilemapWidth;
-u16 *gOverworldTilemapBuffer_Bg2;
-u16 *gOverworldTilemapBuffer_Bg1;
-u16 *gOverworldTilemapBuffer_Bg3;
+u32 *gOverworldTilemapBuffer_Bg2;
+u32 *gOverworldTilemapBuffer_Bg1;
+u32 *gOverworldTilemapBuffer_Bg3;
 u16 gHeldKeyCodeToSend;
 void (*gFieldCallback)(void);
 bool8 (*gFieldCallback2)(void);

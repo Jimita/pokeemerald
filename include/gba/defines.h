@@ -23,7 +23,7 @@
 
 #define ALIGNED(n) __attribute__((aligned(n)))
 
-#define BG_PLTT_SIZE  0x200
+#define BG_PLTT_SIZE  (0x200*16)
 #define OBJ_PLTT      (PLTT + BG_PLTT_SIZE)
 #define OBJ_PLTT_SIZE 0x200
 #define PLTT_SIZE     (BG_PLTT_SIZE + OBJ_PLTT_SIZE)
@@ -54,8 +54,11 @@ extern void * INTR_VECTOR;
 #define VRAM      0x6000000
 #endif
 
-#define BG_CHAR_SIZE      0x4000
-#define BG_SCREEN_SIZE    0x80000
+#define BG_CHAR_SIZE      (0x4000*16)
+#define BG_SCREEN_SIZE    (0x80000*2)
+
+#define BG_CHAR_4BPP_TILE_COUNT BG_CHAR_SIZE / 0x20 
+#define BG_CHAR_8BPP_TILE_COUNT BG_CHAR_SIZE / 0x40
 
 #define GBA_BG_CHAR_SIZE 0x4000 // Size of a character map on the GBA. Don't touch!
 #define GBA_BG_SCREEN_SIZE 0x800 // Size of a BG map on the GBA. Don't touch!

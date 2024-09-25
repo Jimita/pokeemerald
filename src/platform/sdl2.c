@@ -1236,7 +1236,6 @@ static void RenderBGScanline(int bgNum, uint16_t hoffs, uint16_t voffs, int line
     for (unsigned int x = lineStart; x < lineEnd; x++)
     {
         uint16_t *bgmap = (uint16_t *)BG_SCREEN_ADDR(bg->screenBaseBlock);
-
         // adjust for scroll
         unsigned int xx;
         if (bg->mosaic)
@@ -1272,26 +1271,44 @@ static void RenderBGScanline(int bgNum, uint16_t hoffs, uint16_t voffs, int line
             xx %= mapWidthInPixels;
             yy %= mapHeightInPixels;
         }
-
+        
+        
         unsigned int mapX = xx / 8;
         unsigned int mapY = yy / 8;
-        uint16_t entry = bgmap[(mapY * mapWidth) + mapX];
-
-        unsigned int tileNum = entry & 0x3FF;
-        unsigned int paletteNum = (entry >> 12) & 0xF;
-
         unsigned int tileX = xx % 8;
         unsigned int tileY = yy % 8;
+        unsigned int tileNum;
+        unsigned int paletteNum;
+        
+        if (bg->gbaMode)
+        {
+            uint16_t entry = bgmap[(mapY * mapWidth) + mapX];
+            tileNum = entry & 0x3FF;
+            paletteNum = (entry >> 12) & 0xF;
+            
+            // Flip if necessary
+            if (entry & (1 << 10))
+                tileX = 7 - tileX;
+            if (entry & (1 << 11))
+                tileY = 7 - tileY;
+            }
+        else
+        {
+            uint32_t *bgmap32 = (uint32_t *)BG_SCREEN_ADDR(bg->screenBaseBlock);
+            uint32_t entry = bgmap32[(mapY * mapWidth) + mapX];
+            tileNum = (entry & 0xFFFF) % (BG_CHAR_SIZE / (bitsPerPixel * 8));
+            paletteNum = ((entry >> 18) & 0x3FFF) % (BG_PLTT_SIZE / 16);
+            
+            // Flip if necessary
+            if (entry & (1 << 16))
+                tileX = 7 - tileX;
+            if (entry & (1 << 17))
+                tileY = 7 - tileY;
+        }
 
-        // Flip if necessary
-        if (entry & (1 << 10))
-            tileX = 7 - tileX;
-        if (entry & (1 << 11))
-            tileY = 7 - tileY;
-
-        uint16_t tileLoc = tileNum * (bitsPerPixel * 8);
-        uint16_t tileLocY = tileY * bitsPerPixel;
-        uint16_t tileLocX = tileX;
+        uint32_t tileLoc = tileNum * (bitsPerPixel * 8);
+        uint32_t tileLocY = tileY * bitsPerPixel;
+        uint32_t tileLocX = tileX;
         if (bitsPerPixel == 4)
             tileLocX /= 2;
 
