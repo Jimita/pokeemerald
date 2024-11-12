@@ -2845,7 +2845,7 @@ bool8 MovementType_WanderAround_Step4(struct ObjectEvent *objectEvent, struct Sp
     u8 chosenDirection;
 
     memcpy(directions, gStandardDirections, sizeof directions);
-    chosenDirection = directions[Random() & 7];
+    chosenDirection = directions[Random() & 3];
     SetObjectEventDirection(objectEvent, chosenDirection);
     sprite->sTypeFuncId = 5;
     if (GetCollisionInDirection(objectEvent, chosenDirection))
@@ -4929,7 +4929,7 @@ u8 GetCollisionInDirection(struct ObjectEvent *objectEvent, u8 direction)
 {
     s16 x = objectEvent->currentCoords.x;
     s16 y = objectEvent->currentCoords.y;
-    MoveObjectEventCoords(direction, &x, &y);
+    MoveCoordsByAngle(sDirectionToAngles[direction], OBJECT_EVENT_HITBOX_SIZE, &x, &y);
     return GetCollisionAtCoords(objectEvent, x, y, direction);
 }
 

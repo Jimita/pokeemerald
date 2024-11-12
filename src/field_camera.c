@@ -63,14 +63,17 @@ static void GetCameraMinMax(int *minX, int *minY, int *maxX, int *maxY)
 
 void SetCameraPosition(int x, int y)
 {
+#if 0
     int minX;
     int minY;
     int maxX;
     int maxY;
+#endif
 
     gFieldCamera.x = x;
     gFieldCamera.y = y;
 
+#if 0
     GetCameraMinMax(&minX, &minY, &maxX, &maxY);
 
     if (x < minX)
@@ -94,6 +97,7 @@ void SetCameraPosition(int x, int y)
         if (!IsConnectionAvailable(CONNECTION_SOUTH))
             y = maxY;
     }
+#endif
 
     gCameraPosition.x = x;
     gCameraPosition.y = y;
@@ -555,10 +559,12 @@ void CameraUpdate(void)
     int deltaY;
     int movementSpeedX;
     int movementSpeedY;
+#if 0
     int minX;
     int minY;
     int maxX;
     int maxY;
+#endif
     int newPosX;
     int newPosY;
 
@@ -573,6 +579,7 @@ void CameraUpdate(void)
     newPosX = gFieldCamera.x;
     newPosY = gFieldCamera.y;
 
+#if 0
     GetCameraMinMax(&minX, &minY, &maxX, &maxY);
 
     if (gFieldCamera.x < minX)
@@ -604,6 +611,7 @@ void CameraUpdate(void)
             newPosY = maxY;
         }
     }
+#endif
 
     deltaX = newPosX - gCameraPosition.x;
     deltaY = newPosY - gCameraPosition.y;
