@@ -4,6 +4,7 @@
 #include "blit.h"
 #include "dma3.h"
 #include "event_data.h"
+#include "field_camera.h"
 #include "graphics.h"
 #include "main.h"
 #include "menu.h"
@@ -71,6 +72,7 @@ static EWRAM_DATA u16 sFiller = 0;  // needed to align
 static EWRAM_DATA bool8 sScheduledBgCopiesToVram[4] = {FALSE};
 static EWRAM_DATA u16 sTempTileDataBufferIdx = 0;
 static EWRAM_DATA void *sTempTileDataBuffer[0x20] = {NULL};
+static EWRAM_DATA struct WindowTemplate sDialogBoxWindowTemplates[2];
 
 const u16 gStandardMenuPalette[] = INCBIN_U16("graphics/interface/std_menu.gbapal");
 
@@ -145,6 +147,17 @@ void InitStandardTextBoxWindows(void)
     InitWindows(sStandardTextBox_WindowTemplates);
     sStartMenuWindowId = WINDOW_NONE;
     sMapNamePopupWindowId = WINDOW_NONE;
+    memcpy(sDialogBoxWindowTemplates, sStandardTextBox_WindowTemplates, sizeof(sDialogBoxWindowTemplates));
+}
+
+void InitDialogTextBoxWindows(void)
+{
+    if (gFieldCamera.y > gCameraPosition.y + 8)
+        sDialogBoxWindowTemplates[0].tilemapTop = 1;
+    else
+        sDialogBoxWindowTemplates[0].tilemapTop = 15;
+
+    InitWindows(sDialogBoxWindowTemplates);
 }
 
 void FreeAllOverworldWindowBuffers(void)
